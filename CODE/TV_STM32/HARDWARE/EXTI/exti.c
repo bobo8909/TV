@@ -98,6 +98,7 @@ u8 SpeedPluseFunc(void)
 	return SpeedPluse;
 }
 
+#if 0
 //外部中断1服务程序
 u16 AngSensorACount = 0;
 void EXTI1_IRQHandler(void)
@@ -175,7 +176,7 @@ u8 BPluseFunc(void)
 	printf("BPluse = %d\r\n",BPluse);
 	return BPluse;
 }
-
+#endif
 
 
 

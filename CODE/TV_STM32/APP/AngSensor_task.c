@@ -3,13 +3,13 @@
 
 void AngSensor_task(void)
 {
-	u16 AngSenorA = 0;
-	u16 AngSenorB = 0;
+//	u16 AngSenorA = 0;
+//	u16 AngSenorB = 0;
 	
 	if(g_StructExtiFlag.bits.ExtiAngSensorACalFlag == 1)
 	{
 		g_StructExtiFlag.bits.ExtiAngSensorACalFlag = 0;
-		AngSenorA = APluseFunc();
+//		AngSenorA = APluseFunc();
 		//printf("AngSenorA = %d");
 	}
 
@@ -17,7 +17,7 @@ void AngSensor_task(void)
 	if(g_StructExtiFlag.bits.ExtiAngSensorBCalFlag == 1)
 	{
 		g_StructExtiFlag.bits.ExtiAngSensorBCalFlag = 0;
-		AngSenorB = BPluseFunc();
+//		AngSenorB = BPluseFunc();
 		//printf("AngSenorA = %d");
 	}
 }

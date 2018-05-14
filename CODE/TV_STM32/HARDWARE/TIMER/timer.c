@@ -117,8 +117,8 @@ static void TIM6_Init(u16 arr,u16 psc)
 
 //定时器2中断服务程序
 static u8 SpeedTotalCount = 0;
-static u8 AngSensorATotalCount = 0;
-static u8 AngSensorBTotalCount = 0;
+//static u8 AngSensorATotalCount = 0;
+//static u8 AngSensorBTotalCount = 0;
 u16 AngSensorAMinus = 0;
 u16 AngSensorBMinus = 0;
 //static u8 AFlag =0;
@@ -153,7 +153,7 @@ void TIM6_IRQHandler(void)	 //TIM2中断
 				}
 			}
 		}
-
+#if 0
 		/*Angle Sensor A count*/
 		if(g_StructExtiFlag.bits.ExtiAngSensorAStartFlag == 1)
 		{
@@ -205,7 +205,7 @@ void TIM6_IRQHandler(void)	 //TIM2中断
 				g_StructExtiFlag.bits.ExtiAngSensorBFlag = 0;
 			}
 		}
-
+#endif
 		/*can count*/
 		if(g_TIMFlag.bits.CANFlag == 0)
 		{
@@ -213,6 +213,7 @@ void TIM6_IRQHandler(void)	 //TIM2中断
 			if(CANSendCount == 99)
 			{
 				g_TIMFlag.bits.CANFlag = 1;
+				g_TIMFlag.bits.EncoderFlag = 1;
 				CANSendCount = 0;
 			}
 		}
@@ -947,13 +948,48 @@ void TIM5_IRQHandler(void)
 
 #endif
 
+void TIM1_EncoderInit(u16 arr,u16 psc)
+{  
+	GPIO_InitTypeDef GPIO_InitStructure;
+	TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
+	TIM_ICInitTypeDef  TIM_ICInitStructure; 
+//	NVIC_InitTypeDef NVIC_InitStructure;
+	GPIO_PinRemapConfig(GPIO_FullRemap_TIM1, ENABLE);                                                                     	 //用于TIM3的CH2输出的PWM通过该LED显示
+	
+#if 1
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9 | GPIO_Pin_11 ; 
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;  //输入
+	GPIO_Init(GPIOE, &GPIO_InitStructure);
+#endif
+	TIM_TimeBaseStructure.TIM_Period = arr; //设置在下一个更新事件装入活动的自动重装载寄存器周期的值  
+	TIM_TimeBaseStructure.TIM_Prescaler =psc; //设置用来作为TIMx时钟频率除数的预分频值  不分频
+	TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1; //设置时钟分割:TDTS = Tck_tim
+	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;  //TIM向上计数模式
+	TIM_TimeBaseInit(TIM1, &TIM_TimeBaseStructure); //根据TIM_TimeBaseInitStruct中指定的参数初始化TIMx的时间基数单位
+	
+	TIM_EncoderInterfaceConfig(TIM1, TIM_EncoderMode_TI12, TIM_ICPolarity_BothEdge ,TIM_ICPolarity_BothEdge);//使用编码器模式3，上升下降都计数
+	TIM_ICStructInit(&TIM_ICInitStructure);//将结构体中的内容缺省输入
+	TIM_ICInitStructure.TIM_ICFilter = 0;  //选择输入比较滤波器 
+	TIM_ICInit(TIM1, &TIM_ICInitStructure);//将TIM_ICInitStructure中的指定参数初始化TIM3
+
+//	TIM_ARRPreloadConfig(TIM4, ENABLE);//使能预装载
+	TIM_ClearFlag(TIM1, TIM_FLAG_Update);//清除TIM3的更新标志位
+	TIM_ITConfig(TIM1, TIM_IT_Update, ENABLE);//运行更新中断
+
+	TIM_SetCounter(TIM1, 0);
+	TIM_Cmd(TIM1, ENABLE);	
+}
+
+
 void TIM_INIT(void)
 {
 
 	TIM6_Init(999, 71);// 1kHz
 	
 	#if STM32_BOARD
-
+	
+		TIM1_EncoderInit(EncoderArr, EncoderPSC);
+	
 		TIM2_PWM_Init(ARR_1KHz, PSC_1KHz);	
 
 		TIM3_PWM_Init(ARR_2KHz, PSC_2KHz); 		//不分频。PWM频率=72 000 000/(35+1)(9999+1)=200hz

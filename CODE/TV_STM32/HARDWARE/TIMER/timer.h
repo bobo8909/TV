@@ -14,6 +14,8 @@
 #define ARR_2140Hz 33643
 #define PSC_2140Hz 0
 
+#define EncoderArr (5000*4-1)
+#define EncoderPSC 0
 typedef union
 {
 	u8 Byte;
@@ -24,7 +26,7 @@ typedef union
 		u8 LedFlag : 1;
 		u8 TIMAngSensorAFlag : 1;
 		u8 TIMAngSensorBFlag : 1;
-		u8 b5 : 1;
+		u8 EncoderFlag : 1;
 		u8 b6 : 1;
 		u8 b7 : 1;
 	}bits;

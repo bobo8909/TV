@@ -23,6 +23,7 @@ int main(void)
 			DAC_task();
 			SpeedCal_task();
 			AngSensor_task();
+			Encoder_task();
 		#endif
 
 		#if JSDG_BOARD

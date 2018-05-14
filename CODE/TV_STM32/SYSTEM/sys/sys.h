@@ -31,6 +31,9 @@
 #include "ADC_task.h"
 #include "SpeedCal_task.h"
 #include "AngSensor_task.h"
+#include "Encoder_task.h"
+
+
 
 #define STM32_BOARD 1
 #define JSDG_BOARD 0 
