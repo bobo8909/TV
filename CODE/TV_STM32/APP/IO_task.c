@@ -2,7 +2,6 @@
 
 
 
-DRIVING_MODE g_DrivingMode;
 
 /* ====================================================================================================================
 **  Function Name    :    driving mode detect
@@ -12,17 +11,19 @@ DRIVING_MODE g_DrivingMode;
 **  Arguments[Output]:    
 **  Return Value     :    driving mode // 0:manned  1:automatic
 ==================================================================================================================== */
-DRIVING_MODE CheckDrivingMode(void)
+u8 CheckDrivingMode(void)
 {
-	DRIVING_MODE DrivingMode;
+	u8 DrivingMode;
+	
 	if (READ_DRIVING_MODE == 1) 	   //automatic driving switch detect
-	{		
+	{	
 		DrivingMode = AUTOMATIC_DRIVING;
 	}
 	else
 	{
-		DrivingMode = MANNED_DRIVING;
+		DrivingMode = MANNED;
 	}
+	
 	return DrivingMode;
 }
 
@@ -38,40 +39,90 @@ DRIVING_MODE CheckDrivingMode(void)
 
 void CheckIo(void)
 {
-	if(g_DrivingMode  == MANNED_DRIVING)
+	if(g_StructGlobalFlag.bits.DrivingModeSwitchFlag == 0)
 	{
-		
+		g_StructBCMStatus.DrivingMode = CheckDrivingMode();
+	}
+	else
+	{
+		if (READ_DRIVING_MODE == 0)
+		{
+			g_StructGlobalFlag.bits.DrivingModeSwitchFlag = 0;
+		}
+	}
+	
+	if (g_StructBCMStatus.DrivingMode  == MANNED)
+	{
+		BRAKE_CONTROL = OFF;
+	}
+	else
+	{
+		if (READ_BRAKE_CONTROL == 0x00)
+		{
+			if (g_BCM1SendVal.SpeedVal == 0x00)
+			{
+				g_StructBCMStatus.DrivingMode = MANNED;
+				g_StructGlobalFlag.bits.DrivingModeSwitchFlag = 1;
+			}
+			else
+			{
+				BRAKE_CONTROL = ON;
+				D_GEAR = OFF;
+				R_GEAR = OFF;
+				AcceleratorControl(OFF);
+            }
+		}
 	}
 	
 	/*************************************	
 		这里还差一个转角传感器异常的判断
 	*************************************/
 		
-	if (READ_KLAXON_SWITCH == 0x00)       //电喇叭开关检测
+	if (READ_KLAXON_SWITCH == 0x01)       //电喇叭开关检测
 	{
 		g_BCM1SendVal.LIGHTSTATUS.bits.KlaxonSignal = 0x01;
 	}
-
-	if (READ_LIGHT_TURN_RIGHT == 0x00)   //右转灯开关检测
+	else
+	{
+		g_BCM1SendVal.LIGHTSTATUS.bits.KlaxonSignal = 0x00;
+	}
+	
+	if (READ_LIGHT_TURN_RIGHT == 0x01)   //右转灯开关检测
 	{
 		g_BCM1SendVal.LIGHTSTATUS.bits.TurnRightSignal = 0x01;
 	}
+	else 
+	{
+		g_BCM1SendVal.LIGHTSTATUS.bits.TurnRightSignal = 0x00;
+	}
 	
-	if (READ_LIGHT_TURN_LEFT == 0x00)    //左转灯开关检测
+	if (READ_LIGHT_TURN_LEFT == 0x01)    //左转灯开关检测
 	{
 		g_BCM1SendVal.LIGHTSTATUS.bits.TurnLeftSignal = 0x01;
 	}
-
-	if (READ_BEAN_LIGHT == 0x00)    //远光灯开关检测
+	else
+	{
+		g_BCM1SendVal.LIGHTSTATUS.bits.TurnLeftSignal = 0x00;
+	}
+	
+	if (READ_BEAN_LIGHT == 0x01)    //远光灯开关检测
 	{
 		g_BCM1SendVal.LIGHTSTATUS.bits.BeamlightSignal = 0x01;
 	}
-
-	if (READ_DIPPED_HEADLIGHT == 0x00)     //近光灯开关检测
+	else
+	{
+		g_BCM1SendVal.LIGHTSTATUS.bits.BeamlightSignal = 0x00;
+	}
+	
+	if (READ_DIPPED_HEADLIGHT == 0x01)     //近光灯开关检测
 	{
 		g_BCM1SendVal.LIGHTSTATUS.bits.DippedLightSignal = 0x01;
 	}
-
+	else
+	{	
+		g_BCM1SendVal.LIGHTSTATUS.bits.DippedLightSignal = 0x00;
+	}
+	
 	if ((READ_D_GEAR == 0) &&(READ_R_GEAR == 0)) 
 	{
 		g_BCM1SendVal.DRIVINGSTATUS.bits.GearStatusSignal = 0x00;
@@ -89,6 +140,16 @@ void CheckIo(void)
 		g_BCM1SendVal.DRIVINGSTATUS.bits.GearStatusSignal = 0x03;
 		/*invalid*/
 	}    
+
+	/*油门使能信号*/
+	if (READ_ACCELERATOR == 0x01)
+	{
+		ACCELERATOR_ENABLE = OFF;
+	}
+	else
+	{
+		ACCELERATOR_ENABLE = ON;
+	}
 }
 
 
@@ -114,9 +175,21 @@ void IOControl(void)
 		KLAXON_SWITCH = OFF;
 	}
 
-	/*当在无人模式下时，采集到下面的几个信号时不能做相应的控制动作*/
-	if(g_DrivingMode == AUTOMATIC_DRIVING)
+	/*刹车灯控制*/
+	if(g_StructGlobalFlag.bits.StoplightFlag == 0x01)
 	{
+		STOPLIGHT = ON;
+	}
+	else
+	{
+		STOPLIGHT = OFF;
+	}
+
+	
+	/*当在无人模式下时，采集到下面的几个信号时不能做相应的控制动作*/
+	if(g_StructBCMStatus.DrivingMode == AUTOMATIC_DRIVING)
+	{
+		
 		return;
 	}
 
@@ -161,20 +234,38 @@ void IOControl(void)
 	}
 	
 	/*挡位控制*/
-	if (g_BCM1SendVal.DRIVINGSTATUS.bits.GearStatusSignal == 0x00)
+	if (g_BCM1SendVal.DRIVINGSTATUS.bits.GearStatusSignal == 0x00)//空挡
 	{
+		#if 0
 		R_GEAR = OFF;
 		D_GEAR = OFF;
+		#else
+		R_GEAR = ON;
+		D_GEAR = ON;
+		#endif	
+		REVERSING_LIGHT = OFF;
 	}
-	else if(g_BCM1SendVal.DRIVINGSTATUS.bits.GearStatusSignal == 0x01)
+	else if(g_BCM1SendVal.DRIVINGSTATUS.bits.GearStatusSignal == 0x01)//D挡
 	{
+		#if 0
 		D_GEAR = ON;
 		R_GEAR = OFF;
-	}
-	else if(g_BCM1SendVal.DRIVINGSTATUS.bits.GearStatusSignal == 0x02)
-	{
+		#else
 		D_GEAR = OFF;
 		R_GEAR = ON;
+		#endif
+		REVERSING_LIGHT = OFF;
+	}
+	else if(g_BCM1SendVal.DRIVINGSTATUS.bits.GearStatusSignal == 0x02)//R档
+	{
+		#if 0
+		D_GEAR = OFF;
+		R_GEAR = ON;
+		#else
+		D_GEAR = ON;
+		R_GEAR = OFF;
+		#endif
+		REVERSING_LIGHT = ON;
 	}
 }
 
@@ -209,21 +300,36 @@ void CanControl(void)
 		//挡位控制
 		if (g_VCU2RecvVal.CONTROLSIGNAL.bits.b_GearsControlSig == 0x00) //neutral gear 空挡
 		{
+			#if 0
 			D_GEAR = OFF;
 			R_GEAR = OFF;
-
+			#else
+			D_GEAR = ON;
+			R_GEAR = ON;
+			#endif
 			//printf("neutral gear\r\n");
 		}
 		else if(g_VCU2RecvVal.CONTROLSIGNAL.bits.b_GearsControlSig == 0x01)//forward gear 前进挡
 	    {
+	    	#if 0
 	    	D_GEAR = ON;
 			R_GEAR = OFF;   
+			#else
+	    	D_GEAR = OFF;
+			R_GEAR = ON;   
+			#endif
 			printf("forward gear\r\n");
 		}
 		else if(g_VCU2RecvVal.CONTROLSIGNAL.bits.b_GearsControlSig == 0x02)//reserve gear 后退挡
 		{
+			#if 0
 	    	D_GEAR = OFF;
-			R_GEAR = ON;   
+			R_GEAR = ON;  
+			#else
+	    	D_GEAR = ON;
+			R_GEAR = OFF;  
+
+			#endif
 			printf("reserve gear\r\n");
 		}
 		else
@@ -277,6 +383,9 @@ void IO_task(void)
 	CheckIo();
 	
 	IOControl();
-
-	CanControl();
+	
+	if(g_StructBCMStatus.DrivingMode == AUTOMATIC_DRIVING)
+	{
+		CanControl();
+	}
 }

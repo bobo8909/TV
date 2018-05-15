@@ -5,14 +5,18 @@
 
 u8 u8_StartOutput = 0;//超声波ECU启动输出标志位 0：暂停输出， 1：启动输出
 CANRXBUF CANRecvDataBuf[3] = {0, {0}, 0};
+CANRXBUF CANRecvBCMBuf = {0, {0}, 0};
+CANRXBUF CANRecvEBSBuf = {0, {0}, 0};
 
 STRUCT_VCU_2 g_VCU2RecvVal = {0};
 STRUCT_VCU_3 g_VCU3RecvVal = {0};
 STRUCT_VCU_5 g_VCU5RecvVal = {0};
+STRUCT_BCM_1 g_RecvBCM1Val = {0};
 
 STRUCT_BCM_1 g_BCM1SendVal = {0};
 STRUCT_BCM_2 g_BCM2SendVal = {0};
 STRUCT_BCM_3 g_BCM3SendVal = {0};
+STRUCT_EBS_1 g_EBS1RecvVal = {0};
 
 
 
@@ -86,8 +90,15 @@ u8 CanModeInit(u8 tsjw,u8 tbs2,u8 tbs1,u16 brp,u8 mode)
   	CAN_FilterInitStructure.CAN_FilterScale = CAN_FilterScale_32bit;
   	CAN_FilterInitStructure.CAN_FilterIdHigh = (((u32)CANID_VCU_5 << 3) >> 16) & 0xFFFF;
   	CAN_FilterInitStructure.CAN_FilterIdLow = (((u32)CANID_VCU_5 << 3) & 0xFFFF) | CAN_Id_Extended | CAN_RTR_Data;
-  	CAN_FilterInitStructure.CAN_FilterMaskIdHigh = 0; //((CANID_VCU_12 << 3) >> 16) & 0xFFFF;
-  	CAN_FilterInitStructure.CAN_FilterMaskIdLow = 0; //((CANID_VCU_12 << 3) & 0xFFFF) | CAN_Id_Extended | CAN_RTR_Data;;
+#ifdef STM32_BOARD
+	#if 0
+		CAN_FilterInitStructure.CAN_FilterMaskIdHigh = ((CANID_BCM_1 << 3) >> 16) & 0xFFFF;
+		CAN_FilterInitStructure.CAN_FilterMaskIdLow = ((CANID_BCM_1 << 3) & 0xFFFF) | CAN_Id_Extended | CAN_RTR_Data;;
+	#else
+	  	CAN_FilterInitStructure.CAN_FilterMaskIdHigh = ((CANID_EBS_1 << 3) >> 16) & 0xFFFF;
+	  	CAN_FilterInitStructure.CAN_FilterMaskIdLow = ((CANID_EBS_1 << 3) & 0xFFFF) | CAN_Id_Extended | CAN_RTR_Data;;
+	#endif
+#endif
   	CAN_FilterInitStructure.CAN_FilterFIFOAssignment = CAN_Filter_FIFO0;//过滤器1关联到FIFO0
 	CAN_FilterInitStructure.CAN_FilterActivation = ENABLE; //激活过滤器1
   	CAN_FilterInit(&CAN_FilterInitStructure);//滤波器初始化
@@ -132,6 +143,24 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
 		
 		CANRecvDataBuf[2].NewDataFlag = 1;
 	}
+
+	#if STM32_BOARD
+		#if 0
+			if(RxMessage.ExtId == CANID_BCM_1)
+			{
+				memcpy(CANRecvBCMBuf.Buf,RxMessage.Data,RxMessage.DLC);
+				
+				CANRecvBCMBuf.NewDataFlag = 1;
+			}
+		#else		
+			if(RxMessage.ExtId == CANID_EBS_1)
+			{
+				memcpy(CANRecvEBSBuf.Buf,RxMessage.Data,RxMessage.DLC);
+				
+				CANRecvEBSBuf.NewDataFlag = 1;
+			}
+		#endif		
+	#endif
 }
 #endif
 

@@ -17,7 +17,8 @@ int main(void)
 		CANrecv_task();
 		
 	    #if STM32_BOARD
-	    	/*PWM的输入输出处理*/
+	    	/*PWM的输入输出处理*/		
+			IO_task();
 	        PWM_task();
 			ADC_task();
 			DAC_task();

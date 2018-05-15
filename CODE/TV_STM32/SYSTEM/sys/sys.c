@@ -32,6 +32,7 @@ CanRxMsg CANSendBuf[3] = {0,0,0,0,0,{0},0};
 
 STRUCT_GLOBAL_FLAG g_StructGlobalFlag = {0};
 STRUCT_EXTI_FLAG g_StructExtiFlag = {0};
+STRUCT_BCM_STATUS g_StructBCMStatus = {MANNED};
 
 static void System_clock(void)
 {	
@@ -39,12 +40,12 @@ static void System_clock(void)
 						 | RCC_APB1Periph_TIM5 | RCC_APB1Periph_TIM6 |RCC_APB1Periph_DAC, ENABLE);	
 	
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO | RCC_APB2Periph_TIM1 | RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOB 
-						 | RCC_APB2Periph_GPIOC| RCC_APB2Periph_GPIOD | RCC_APB2Periph_GPIOE | RCC_APB2Periph_SPI1 
-						 | RCC_APB2Periph_USART1 | RCC_APB2Periph_ADC1, ENABLE);														  
+						 | RCC_APB2Periph_GPIOC| RCC_APB2Periph_GPIOD | RCC_APB2Periph_GPIOE |RCC_APB2Periph_GPIOF
+						 |RCC_APB2Periph_SPI1  | RCC_APB2Periph_USART1 | RCC_APB2Periph_ADC1, ENABLE);														  
 }
 
 
-void System_init(void)
+void System_init(void)
 {
 	System_clock();
 	
@@ -76,6 +77,8 @@ void System_init(void)
 		EXTI1_Init();
 		
 		EXTI2_Init();
+		
+		IO_init();
 
 	#endif
 
@@ -86,6 +89,8 @@ void System_init(void)
 	#if ZXKZ_BOARD
 		AD5734R_Init();	
 	#endif
+
+	g_StructBCMStatus.DrivingMode = CheckDrivingMode();
 	
 	printf("system init finish\r\n");
 }

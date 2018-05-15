@@ -27,7 +27,7 @@ typedef union
 		u8 TIMAngSensorAFlag : 1;
 		u8 TIMAngSensorBFlag : 1;
 		u8 EncoderFlag : 1;
-		u8 b6 : 1;
+		u8 DACSendFlag : 1;
 		u8 b7 : 1;
 	}bits;
 }STRUCT_TIMFLAG;

@@ -5,5 +5,6 @@
 
 
 void DAC_task(void);
+void AcceleratorControl(u16 AcceleratorVal);
 
 #endif

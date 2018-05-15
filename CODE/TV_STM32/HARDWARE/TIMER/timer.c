@@ -131,6 +131,7 @@ u16 AngSensorBMinus = 0;
 
 static u16 LEDCount = 0;
 static u8 CANSendCount = 0;
+static u8 DACSendCount = 0;
 void TIM6_IRQHandler(void)	 //TIM2中断
 {
 
@@ -229,8 +230,19 @@ void TIM6_IRQHandler(void)	 //TIM2中断
 			g_TIMFlag.bits.LedFlag = 0;
 			LEDCount = 0;
 		}
-		
 
+		/*ADC接收到CAN上的数据后99ms需要把数据清零一次，避免一直有DA电压输出*/
+		if(g_TIMFlag.bits.DACSendFlag == 1)
+		{
+			DACSendCount++;
+			if(DACSendCount == 98)
+			{
+				g_TIMFlag.bits.DACSendFlag = 0;
+				DACSendCount = 0;
+				g_VCU2RecvVal.Accelerator1HIGH = 0;
+				g_VCU2RecvVal.Accelerator1LOW = 0;
+			}
+		}
 	}
 }
 #if 0

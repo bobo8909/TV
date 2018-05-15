@@ -5,15 +5,15 @@
 
 #define OFF 0
 #define ON 1
-
+#if 0
 typedef enum 
 {
 	MANNED_DRIVING = 0, //manned
 	AUTOMATIC_DRIVING , // 
 }DRIVING_MODE;
+#endif
 
-extern DRIVING_MODE g_DrivingMode;
-
+u8 CheckDrivingMode(void);
 
 void IO_task(void);
 

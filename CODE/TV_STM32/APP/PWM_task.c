@@ -79,7 +79,7 @@ void PWM_task(void)
 			g_BCM2SendVal.AngleSensorSignalSLow = (u8)(SendVal & 0xFF);
 		}
 	}
-	else if(g_VCU5RecvVal.DRIVING_MODE.bits.b_DrivingMode == AUTOMATIC_DRIVE)
+	else if(g_VCU5RecvVal.DRIVING_MODE.bits.b_DrivingMode == AUTOMATIC_DRIVING)
 	{
 		//目前只有转角的两路需要输出20180503 
 		//这里还需要根据实际情况进行修改

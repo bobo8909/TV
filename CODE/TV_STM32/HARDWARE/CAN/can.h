@@ -11,7 +11,6 @@ typedef struct
 }CANRXBUF;
 
 
-extern CANRXBUF CANRecvDataBuf[3] ;
 
 
 
@@ -143,6 +142,39 @@ typedef struct _BCM_3
 	u8 b6;
 	u8 b7;
 }STRUCT_BCM_3;
+
+typedef struct _EBS_1
+{
+	u8 FrontBrakePressure;
+	u8 RearBrakePressure;
+	union
+	{
+		u8 Byte;
+		struct
+		{
+			u8 unused : 5;
+			u8 SystemOverheatingWarning : 1;
+			u8 DrivingBrakeEnable : 1;
+			u8 b7 : 1;
+		}bits;
+	}Byte2;
+	union
+	{
+		u8 Byte;
+		struct
+		{
+			u8 VoltageFault : 1;
+			u8 RegulatorFault : 1;
+			u8 ESCHardFault : 1;
+			u8 CANFault : 1;
+			u8 unused : 4;
+		}bits;
+	}Byte3;
+	u8 LeftBrakePressureSetting;
+	u8 RightBrakePressureSetting;
+	u8 MainCylinderBrakePressure;
+	u8 b7;
+}STRUCT_EBS_1;
 //#define CANID_VCU_12  		(0x18DC11F7) //使能命令
 //#define CANID_VCU_12  		(0x18F1CCD1) //自检命令
 extern STRUCT_VCU_2 g_VCU2RecvVal;
@@ -151,13 +183,21 @@ extern STRUCT_VCU_5 g_VCU5RecvVal;
 extern STRUCT_BCM_1 g_BCM1SendVal;
 extern STRUCT_BCM_2 g_BCM2SendVal;
 extern STRUCT_BCM_3 g_BCM3SendVal;
+extern STRUCT_BCM_1 g_RecvBCM1Val; 
+extern STRUCT_EBS_1 g_EBS1RecvVal;
 
+
+extern CANRXBUF CANRecvEBSBuf ;
+extern CANRXBUF CANRecvDataBuf[3] ;
 
 
 #define CANID_VCU_2 			(0x18F122D1) //动力模块
 #define CANID_VCU_3				(0x18F133D1) //转向模块
 #define CANID_VCU_5				(0x18F144D1) //灯光喇叭
 
+#define CANID_BCM_1				(0x18DC11F7) //获取驾驶状态CANID
+
+#define CANID_EBS_1				(0x0CF6F1EA)//制动控制器反馈报文
 
 
 

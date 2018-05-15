@@ -39,11 +39,15 @@
 #define JSDG_BOARD 0 
 #define ZXKZ_BOARD 0
 
-typedef enum 
+#define  MANNED 0
+#define  AUTOMATIC_DRIVING 1
+
+typedef struct _BCM_STATUS
 {
-	 MANNED,
-	 AUTOMATIC_DRIVE,
-}DRIVINGMODE;
+	u8 DrivingMode;
+}STRUCT_BCM_STATUS;
+
+extern STRUCT_BCM_STATUS g_StructBCMStatus;
 
 
 typedef union
@@ -56,8 +60,8 @@ typedef union
 			u8 RecvVCU5Flag : 1;
 			u8 AngSensorACalFlag : 1;
 			u8 AngSensorBCalFlag : 1;
-			u8 b5 : 1;
-			u8 b6 : 1;
+			u8 StoplightFlag : 1;
+			u8 DrivingModeSwitchFlag : 1;
 			u8 b7 : 1;
 		}bits;
 }STRUCT_GLOBAL_FLAG;

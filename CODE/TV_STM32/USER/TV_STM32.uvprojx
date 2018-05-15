@@ -468,6 +468,11 @@
               <FileType>1</FileType>
               <FilePath>..\APP\AngSensor_task.c</FilePath>
             </File>
+            <File>
+              <FileName>Encoder_task.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\APP\Encoder_task.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

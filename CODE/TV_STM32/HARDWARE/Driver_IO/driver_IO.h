@@ -3,17 +3,18 @@
 
 #include "sys.h"
 
-#define KLAXON_SWITCH		PBout(5)// 喇叭继电器
-#define TURN_RIGHT_LIGHT		PBout(6)// 右转灯间歇继电器  
-#define TURN_LEFT_LIGHT		PBout(7)// 左转灯开关间歇继电器  
-#define DIPPED_HEADLIGHT   	PBout(8)// 近光灯继电器
-#define BEAN_LIGHT      	PBout(9)// 远光灯继电器
-#define STOPLIGHT     		PBout(10)// 刹车灯继电器
-#define REVERSING_LIGHT    	PBout(11)// 倒车灯继电器
-#define D_GEAR   			PBout(12)// 挡位D
-#define R_GEAR              PBout(13)// 挡位R
-#define BRAKE_CONTROL		PBout(14)// 主动制动控制
-#define LED					PBout(15)// LED灯
+#define KLAXON_SWITCH		PFout(0)// 喇叭继电器
+#define TURN_RIGHT_LIGHT	PFout(1)// 右转灯间歇继电器  
+#define TURN_LEFT_LIGHT		PFout(2)// 左转灯开关间歇继电器  
+#define DIPPED_HEADLIGHT   	PFout(3)// 近光灯继电器
+#define BEAN_LIGHT      	PFout(4)// 远光灯继电器
+#define STOPLIGHT     		PFout(5)// 刹车灯继电器
+#define REVERSING_LIGHT    	PFout(6)// 倒车灯继电器
+#define D_GEAR   			PFout(7)// 挡位D
+#define R_GEAR              PFout(9)// 挡位R
+#define BRAKE_CONTROL		PFout(10)// 主动制动控制
+#define ACCELERATOR_ENABLE	PFout(11)//油门使能
+
 
 #define READ_DRIVING_MODE    GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_0)   //自动驾驶模式切换开关
 #define READ_KLAXON_SWITCH     GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_1)   //电喇叭开关
@@ -23,6 +24,9 @@
 #define READ_DIPPED_HEADLIGHT    GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_5)   //近光灯开关
 #define READ_D_GEAR        GPIO_ReadInputDataBit(GPIOD,GPIO_Pin_6)      //D挡开关
 #define READ_R_GEAR       GPIO_ReadInputDataBit(GPIOD,GPIO_Pin_7)      //R挡开关
+#define READ_BRAKE_CONTROL GPIO_ReadInputDataBit(GPIOD,GPIO_Pin_8)		//制动控制
+#define READ_ACCELERATOR	GPIO_ReadInputDataBit(GPIOD,GPIO_Pin_9)		//油门使能
+
 
 void IO_init(void);
 void SpeedGPIOInit(void);
