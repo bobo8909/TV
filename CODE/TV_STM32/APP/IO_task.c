@@ -144,11 +144,11 @@ void CheckIo(void)
 	/*油门使能信号*/
 	if (READ_ACCELERATOR == 0x01)
 	{
-		ACCELERATOR_ENABLE = OFF;
+		ACCELERATOR_ENABLE = ON;
 	}
 	else
 	{
-		ACCELERATOR_ENABLE = ON;
+		ACCELERATOR_ENABLE = OFF;
 	}
 }
 
@@ -236,7 +236,7 @@ void IOControl(void)
 	/*挡位控制*/
 	if (g_BCM1SendVal.DRIVINGSTATUS.bits.GearStatusSignal == 0x00)//空挡
 	{
-		#if 0
+		#if 1
 		R_GEAR = OFF;
 		D_GEAR = OFF;
 		#else
@@ -247,7 +247,7 @@ void IOControl(void)
 	}
 	else if(g_BCM1SendVal.DRIVINGSTATUS.bits.GearStatusSignal == 0x01)//D挡
 	{
-		#if 0
+		#if 1
 		D_GEAR = ON;
 		R_GEAR = OFF;
 		#else
@@ -258,7 +258,7 @@ void IOControl(void)
 	}
 	else if(g_BCM1SendVal.DRIVINGSTATUS.bits.GearStatusSignal == 0x02)//R档
 	{
-		#if 0
+		#if 1
 		D_GEAR = OFF;
 		R_GEAR = ON;
 		#else

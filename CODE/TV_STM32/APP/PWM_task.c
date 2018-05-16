@@ -54,7 +54,10 @@ void PWM_task(void)
 			g_BCM2SendVal.EPSMomentalSignal1High = SendVal >> 8;
 			g_BCM2SendVal.EPSMomentalSignal1Low = (u8)(SendVal & 0xFF);
 		}
-
+		else
+		{
+			TIM_SetCompare1(TIM3, 18000);	
+		}
 		if(BackupPWM3OUT4 != PWM3OUT4)
 		{
 			BackupPWM3OUT4 = PWM3OUT4;		
@@ -65,6 +68,10 @@ void PWM_task(void)
 			SendVal = BackupPWM3OUT4 * ARR_2KHz / TIM_SEND_RESOLUTION;
 			g_BCM2SendVal.EPSMomentalSignal2High = SendVal >> 8;
 			g_BCM2SendVal.EPSMomentalSignal2Low = (u8)(SendVal & 0xFF);
+		}
+		else
+		{			
+			TIM_SetCompare3(TIM3, 18000);
 		}
 
 		if(BackupPWM4OUT2 != PWM4OUT2)
