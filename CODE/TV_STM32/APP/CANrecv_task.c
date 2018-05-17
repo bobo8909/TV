@@ -10,10 +10,6 @@ void CANrecv_task(void)
 	
 		memcpy(&g_VCU2RecvVal,CANRecvDataBuf[0].Buf,8);
 
-		if ((g_VCU2RecvVal.Accelerator1HIGH != 0x00) && (g_VCU2RecvVal.Accelerator1LOW != 0x00))
-		{
-			g_TIMFlag.bits.DACSendFlag = 1;
-		}
 		CANRecvDataBuf[0].NewDataFlag = 0;		
 //		g_StructGlobalFlag.bits.RecvVCU2Flag = 1;
 	}
@@ -33,7 +29,15 @@ void CANrecv_task(void)
 		memcpy(&g_VCU5RecvVal,CANRecvDataBuf[2].Buf,8);
 		
 		CANRecvDataBuf[2].NewDataFlag = 0;
-//		g_StructGlobalFlag.bits.RecvVCU5Flag = 1;
+
+		if(g_VCU5RecvVal.DRIVING_MODE.bits.b_DrivingMode == MANNED)
+		{
+			g_StructBCMStatus.DrivingMode = MANNED;
+		}
+		else
+		{
+			g_StructBCMStatus.DrivingMode = AUTOMATIC_DRIVING;
+		}
 	}
 	#if 0
 		if(CANRecvBCMBuf.NewDataFlag == 1)
@@ -54,6 +58,11 @@ void CANrecv_task(void)
 			{
 				g_StructGlobalFlag.bits.StoplightFlag = 1;
 			}
+			else
+			{
+				g_StructGlobalFlag.bits.StoplightFlag = 0;				
+			}
+			
 			if(g_StructBCMStatus.DrivingMode == AUTOMATIC_DRIVING)
 			{
 				if(g_EBS1RecvVal.MainCylinderBrakePressure >= 55)

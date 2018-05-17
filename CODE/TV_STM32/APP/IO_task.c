@@ -42,6 +42,8 @@ void CheckIo(void)
 	if(g_StructGlobalFlag.bits.DrivingModeSwitchFlag == 0)
 	{
 		g_StructBCMStatus.DrivingMode = CheckDrivingMode();
+
+		g_BCM1SendVal.DRIVINGSTATUS.bits.DrivingModeStatus = g_StructBCMStatus.DrivingMode;
 	}
 	else
 	{
@@ -123,7 +125,7 @@ void CheckIo(void)
 		g_BCM1SendVal.LIGHTSTATUS.bits.DippedLightSignal = 0x00;
 	}
 	
-	if ((READ_D_GEAR == 0) &&(READ_R_GEAR == 0)) 
+	if ((READ_D_GEAR == 0) &&(READ_R_GEAR == 0)) //挡位检测
 	{
 		g_BCM1SendVal.DRIVINGSTATUS.bits.GearStatusSignal = 0x00;
 	}
@@ -141,15 +143,6 @@ void CheckIo(void)
 		/*invalid*/
 	}    
 
-	/*油门使能信号*/
-	if (READ_ACCELERATOR == 0x01)
-	{
-		ACCELERATOR_ENABLE = ON;
-	}
-	else
-	{
-		ACCELERATOR_ENABLE = OFF;
-	}
 }
 
 
@@ -267,6 +260,16 @@ void IOControl(void)
 		#endif
 		REVERSING_LIGHT = ON;
 	}
+	
+	/*油门使能信号*/
+	if (READ_ACCELERATOR == 0x01)
+	{
+		ACCELERATOR_ENABLE = ON;
+	}
+	else
+	{
+		ACCELERATOR_ENABLE = OFF;
+	}
 }
 
 
@@ -284,8 +287,6 @@ void CanControl(void)
 {		
 
 	
-	//if(g_StructGlobalFlag.bits.RecvVCU5Flag == 1)
-	{
 		//g_StructGlobalFlag.bits.RecvVCU5Flag = 0;
 		//电喇叭控制
 		if(g_VCU5RecvVal.LIGHTSTATUS.bits.b_Klaxon == 0x01)   
@@ -307,6 +308,8 @@ void CanControl(void)
 			D_GEAR = ON;
 			R_GEAR = ON;
 			#endif
+
+			REVERSING_LIGHT = OFF;			
 			//printf("neutral gear\r\n");
 		}
 		else if(g_VCU2RecvVal.CONTROLSIGNAL.bits.b_GearsControlSig == 0x01)//forward gear 前进挡
@@ -318,6 +321,8 @@ void CanControl(void)
 	    	D_GEAR = OFF;
 			R_GEAR = ON;   
 			#endif
+
+			REVERSING_LIGHT = OFF;
 			//printf("forward gear\r\n");
 		}
 		else if(g_VCU2RecvVal.CONTROLSIGNAL.bits.b_GearsControlSig == 0x02)//reserve gear 后退挡
@@ -328,8 +333,9 @@ void CanControl(void)
 			#else
 	    	D_GEAR = ON;
 			R_GEAR = OFF;  
-
 			#endif
+			
+			REVERSING_LIGHT = ON;
 			//printf("reserve gear\r\n");
 		}
 		else
@@ -338,6 +344,17 @@ void CanControl(void)
 			printf("INVALID gear\r\n");
 		}
 
+		/*油门使能*/
+		if (g_VCU2RecvVal.CONTROLSIGNAL.bits.b_AcceleratorEnable == 0x01)
+		{
+			ACCELERATOR_ENABLE = ON;
+		}
+		else
+		{
+			ACCELERATOR_ENABLE = OFF;
+		}
+
+		/*近光灯*/
 		if (g_VCU5RecvVal.LIGHTSTATUS.bits.b_DippedHeadlight == 0x01)
 		{
 			DIPPED_HEADLIGHT = ON;
@@ -349,6 +366,7 @@ void CanControl(void)
 			//printf("INVALID gear\r\n");
 		}
 
+		/*远光灯*/
 		if (g_VCU5RecvVal.LIGHTSTATUS.bits.b_BeamLight == 0x01)
 		{
 			BEAN_LIGHT = ON;		
@@ -358,6 +376,7 @@ void CanControl(void)
 			BEAN_LIGHT = OFF;		
 		}
 
+		/*左转灯*/
 		if (g_VCU5RecvVal.LIGHTSTATUS.bits.b_TurnLeftLight == 0x01)
 		{
 			TURN_LEFT_LIGHT = ON;
@@ -366,7 +385,8 @@ void CanControl(void)
 		{
 			TURN_LEFT_LIGHT = OFF;
 		}
-		
+
+		/*右转灯*/
 		if (g_VCU5RecvVal.LIGHTSTATUS.bits.b_TurnRightLight == 0x01)
 		{
 			TURN_RIGHT_LIGHT = ON;
@@ -375,7 +395,7 @@ void CanControl(void)
 		{
 			TURN_RIGHT_LIGHT = OFF;
 		}
-	}
+
 }
 
 void IO_task(void)

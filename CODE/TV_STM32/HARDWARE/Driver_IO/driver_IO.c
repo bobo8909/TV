@@ -30,7 +30,7 @@ void SpeedGPIOInit(void)
 	GPIO_InitTypeDef GPIO_InitStructure;
  	
 	GPIO_InitStructure.GPIO_Pin  = GPIO_Pin_0;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU; 
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU; //上拉输入
 	GPIO_Init(GPIOE, &GPIO_InitStructure);
 }
 
@@ -46,7 +46,7 @@ void AngleSensorGPIOInit(void)
 	GPIO_InitTypeDef GPIO_InitStructure;
  	
 	GPIO_InitStructure.GPIO_Pin  = GPIO_Pin_1 | GPIO_Pin_2;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU; 
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU; //上拉输入
 	GPIO_Init(GPIOE, &GPIO_InitStructure);
 }
 
