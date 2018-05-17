@@ -444,11 +444,6 @@
               <FilePath>..\APP\IO_task.c</FilePath>
             </File>
             <File>
-              <FileName>PWM_task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\APP\PWM_task.c</FilePath>
-            </File>
-            <File>
               <FileName>DAC_task.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\APP\DAC_task.c</FilePath>
@@ -464,14 +459,14 @@
               <FilePath>..\APP\SpeedCal_task.c</FilePath>
             </File>
             <File>
-              <FileName>AngSensor_task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\APP\AngSensor_task.c</FilePath>
-            </File>
-            <File>
               <FileName>Encoder_task.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\APP\Encoder_task.c</FilePath>
+            </File>
+            <File>
+              <FileName>AngleSensor_task.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\APP\AngleSensor_task.c</FilePath>
             </File>
           </Files>
         </Group>

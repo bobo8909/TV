@@ -23,14 +23,14 @@
 #include "exti.h"
 
 
-#include "PWM_task.h"
+#include "AngleSensor_task.h"
 #include "CANsend_task.h"
 #include "CANrecv_task.h"
 #include "IO_task.h"
 #include "DAC_task.h"
 #include "ADC_task.h"
 #include "SpeedCal_task.h"
-#include "AngSensor_task.h"
+#include "AdditionalAngleSensor_task.h"
 #include "Encoder_task.h"
 
 

@@ -21,11 +21,11 @@ int main(void)
 	    #if STM32_BOARD
 	    	/*PWM的输入输出处理*/		
 			IO_task();
-	        PWM_task();
+	        AngleSensor_task();
 			ADC_task();
 			DAC_task();
 			SpeedCal_task();
-			AngSensor_task();
+			//AdditionalAngleSensor_task();
 			Encoder_task();
 		#endif
 

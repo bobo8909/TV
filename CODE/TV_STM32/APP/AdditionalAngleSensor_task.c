@@ -1,7 +1,8 @@
-#include "AngSensor_task.h"
+#include "AdditionalAngleSensor_task.h"
 
-
-void AngSensor_task(void)
+/*附加角度传感器任务，使用外部中断来获取脉冲*/
+#if 0
+void AdditionalAngleSensor_task(void)
 {
 //	u16 AngSenorA = 0;
 //	u16 AngSenorB = 0;
@@ -21,3 +22,4 @@ void AngSensor_task(void)
 		//printf("AngSenorA = %d");
 	}
 }
+#endif

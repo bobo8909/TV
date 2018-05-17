@@ -1,7 +1,7 @@
 #include "dac.h"
 
 //DAC通道1输出初始化
-void Dac1_Init(void)
+void DAC1_Init(void)
 {
   
 	GPIO_InitTypeDef GPIO_InitStructure;
@@ -14,7 +14,7 @@ void Dac1_Init(void)
  	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN; 		 //模拟输入
  	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
  	GPIO_Init(GPIOA, &GPIO_InitStructure);
-	GPIO_SetBits(GPIOA,GPIO_Pin_4)	;//PA.4 输出高
+	GPIO_ResetBits(GPIOA,GPIO_Pin_4)	;//PA.4 输出高
 					
 	DAC_InitType.DAC_Trigger=DAC_Trigger_None;	//不使用触发功能 TEN1=0
 	DAC_InitType.DAC_WaveGeneration=DAC_WaveGeneration_None;//不使用波形发生

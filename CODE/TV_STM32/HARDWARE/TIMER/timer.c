@@ -264,7 +264,7 @@ u8 TIM6PluseFunc(void)
 //PWM输出初始化
 //arr：自动重装值
 //psc：时钟预分频数
-static void TIM3_PWM_Init(u16 arr,u16 psc)
+static void TIM3_Torque_Init(u16 arr,u16 psc)
 {  
 	GPIO_InitTypeDef GPIO_InitStructure;
 	TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
@@ -429,7 +429,7 @@ void TIM3_IRQHandler(void)   //TIM3中断
 
 //TIM4
 
-static void TIM4_PWM_Init(u16 arr,u16 psc)
+static void TIM4_AngleS_Init(u16 arr,u16 psc)
 {  
 	GPIO_InitTypeDef GPIO_InitStructure;
 	TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
@@ -701,7 +701,7 @@ void TIM5_IRQHandler(void)   //TIM3中断
 #endif
 //TIM6
 #if 1
-static void TIM2_PWM_Init(u16 arr,u16 psc)
+static void TIM2_AngleP_Init(u16 arr,u16 psc)
 {  
 	GPIO_InitTypeDef GPIO_InitStructure;
 	TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
@@ -966,6 +966,7 @@ void TIM1_EncoderInit(u16 arr,u16 psc)
 	TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
 	TIM_ICInitTypeDef  TIM_ICInitStructure; 
 //	NVIC_InitTypeDef NVIC_InitStructure;
+	/*完全重映像*/
 	GPIO_PinRemapConfig(GPIO_FullRemap_TIM1, ENABLE);                                                                     	 //用于TIM3的CH2输出的PWM通过该LED显示
 	
 #if 1
@@ -1002,17 +1003,17 @@ void TIM_INIT(void)
 	
 		TIM1_EncoderInit(EncoderArr, EncoderPSC);
 	
-		TIM2_PWM_Init(ARR_1KHz, PSC_1KHz);	
+		TIM2_AngleP_Init(ARR_1KHz, PSC_1KHz);	
 
-		TIM3_PWM_Init(ARR_2KHz, PSC_2KHz); 		//不分频。PWM频率=72 000 000/(35+1)(9999+1)=200hz
+		TIM3_Torque_Init(ARR_2KHz, PSC_2KHz); 		//不分频。PWM频率=72 000 000/(35+1)(9999+1)=200hz
 
-		//	TIM3_PWM_Init(4999,71);  //不分频。PWM频率=72000000/72=1MHz
+		//	TIM3_Torque_Init(4999,71);  //不分频。PWM频率=72000000/72=1MHz
 		//	TIM4_Init(0XFFFF,72-1); //以1Mhz的频率计数 
 		//	TIM_SetCompare1(TIM3,10000);		   
 		 //   TIM_SetCompare2(TIM3,0x8000); 	   
 		//	TIM_SetCompare3(TIM3,0xA000);		   
 		//	TIM_SetCompare4(TIM3,0xF000);		   
-		TIM4_PWM_Init(ARR_200Hz, PSC_200Hz); 	 //不分频。PWM频率=72 000 000/(0+1)(35999+1)=2Khz
+		TIM4_AngleS_Init(ARR_200Hz, PSC_200Hz); 	 //不分频。PWM频率=72 000 000/(0+1)(35999+1)=2Khz
 			//TIM_SetCompare1(TIM4,20000);		
 		//TIM5_PWM_Init(ARR_2KHz, PSC_2KHz); 	 //不分频。PWM频率=72 000 000/(1+1)(35999+1)=1Khz
 			//TIM_SetCompare1(TIM5,5000); 		

@@ -8,6 +8,7 @@
 
 #define Speed(N) (N)*2*PI*R*36/8/12.49f 
 
+/*通过外部中断来获取速度传感器的脉冲数，然后通过计算获得时间*/
 static void SpeedCal(void)
 {
 	static u16 SpeedN = 0;

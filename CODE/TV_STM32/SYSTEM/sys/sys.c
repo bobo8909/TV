@@ -66,17 +66,17 @@ void System_init(void)
 	#if STM32_BOARD
 		SpeedGPIOInit();
 
-		AngleSensorGPIOInit();
+		//AngleSensorGPIOInit();
 	
 		Adc_Init();
 		
-		Dac1_Init();
+		DAC1_Init();
 		
 		EXTI0_Init();
 
-		EXTI1_Init();
+		//EXTI1_Init();
 		
-		EXTI2_Init();
+		//EXTI2_Init();
 		
 		IO_init();
 

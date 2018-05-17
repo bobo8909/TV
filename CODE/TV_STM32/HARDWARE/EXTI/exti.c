@@ -24,6 +24,7 @@ void EXTI0_Init(void)
   	NVIC_Init(&NVIC_InitStructure); 
 }
 
+#if 0
 void EXTI1_Init(void)
 {
  
@@ -67,7 +68,7 @@ void EXTI2_Init(void)
   	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;								//使能外部中断通道
   	NVIC_Init(&NVIC_InitStructure); 
 }
-
+#endif
 //外部中断0服务程序 
 u16 SpeedCount = 0;
 static u16 PluseCount = 0;

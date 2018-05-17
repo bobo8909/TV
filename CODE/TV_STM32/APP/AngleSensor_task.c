@@ -1,4 +1,4 @@
-#include "PWM_task.h"
+#include "AngleSensor_task.h"
 
 
 /******************************************************
@@ -16,7 +16,7 @@
   *   
   * @retval None
   */
-void PWM_task(void)
+void AngleSensor_task(void)
 {
 	static u32 PWMVal[4] = {0};
 	
@@ -39,6 +39,7 @@ void PWM_task(void)
 			TIM_SetCompare3(TIM2, BackupPWM2OUT4);
 			printf("BackupPWM2OUT4 = %d\r\n", BackupPWM2OUT4);
 			SendVal = BackupPWM2OUT4 * ARR_1KHz / TIM_SEND_RESOLUTION ;
+			
 			g_BCM2SendVal.AngleSensorSignalPHigh = SendVal >> 8;
 			g_BCM2SendVal.AngleSensorSignalPLow = (u8)(SendVal & 0xFF);
 		}
@@ -48,9 +49,9 @@ void PWM_task(void)
 			BackupPWM3OUT2 = PWM3OUT2;		
 			PWM3OUT2 = 0;
 			TIM_SetCompare1(TIM3, BackupPWM3OUT2);
-			printf("BackupPWM3OUT2 = %d\r\n", BackupPWM3OUT2);
-			
+			printf("BackupPWM3OUT2 = %d\r\n", BackupPWM3OUT2);			
 			SendVal = BackupPWM3OUT2 * ARR_2KHz / TIM_SEND_RESOLUTION ;
+			
 			g_BCM2SendVal.EPSMomentalSignal1High = SendVal >> 8;
 			g_BCM2SendVal.EPSMomentalSignal1Low = (u8)(SendVal & 0xFF);
 		}
@@ -82,14 +83,13 @@ void PWM_task(void)
 			printf("BackupPWM4OUT2 = %d\r\n", BackupPWM4OUT2);
 			
 			SendVal = BackupPWM4OUT2 * ARR_200Hz / TIM_SEND_RESOLUTION;
+			
 			g_BCM2SendVal.AngleSensorSignalSHigh = SendVal >> 8;
 			g_BCM2SendVal.AngleSensorSignalSLow = (u8)(SendVal & 0xFF);
 		}
 	}
 	else if(g_VCU5RecvVal.DRIVING_MODE.bits.b_DrivingMode == AUTOMATIC_DRIVING)
 	{
-		//目前只有转角的两路需要输出20180503 
-		//这里还需要根据实际情况进行修改
 		PWMVal[0] = ((u32)g_VCU3RecvVal.AngleSensorSigSHigh << 8 | g_VCU3RecvVal.AngleSensorSigSLow) * ARR_200Hz / TIM_SEND_RESOLUTION;
 		PWMVal[1] = ((u32)g_VCU3RecvVal.AngleSensorSigPHigh << 8 | g_VCU3RecvVal.AngleSensorSigPLow) * ARR_1KHz / TIM_SEND_RESOLUTION  ;
 		PWMVal[2] = ((u32)g_VCU3RecvVal.EPSMomentalSig1HIGH << 8 | g_VCU3RecvVal.EPSMomentalSig1LOW) * ARR_2KHz / TIM_SEND_RESOLUTION;

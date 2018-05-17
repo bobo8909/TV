@@ -318,7 +318,7 @@ void CanControl(void)
 	    	D_GEAR = OFF;
 			R_GEAR = ON;   
 			#endif
-			printf("forward gear\r\n");
+			//printf("forward gear\r\n");
 		}
 		else if(g_VCU2RecvVal.CONTROLSIGNAL.bits.b_GearsControlSig == 0x02)//reserve gear ºóÍËµ²
 		{
@@ -330,7 +330,7 @@ void CanControl(void)
 			R_GEAR = OFF;  
 
 			#endif
-			printf("reserve gear\r\n");
+			//printf("reserve gear\r\n");
 		}
 		else
 		{
@@ -341,7 +341,7 @@ void CanControl(void)
 		if (g_VCU5RecvVal.LIGHTSTATUS.bits.b_DippedHeadlight == 0x01)
 		{
 			DIPPED_HEADLIGHT = ON;
-			printf("DIPPED_HEADLIGHT\r\n");
+			//printf("DIPPED_HEADLIGHT\r\n");
 		}
 		else 
 		{

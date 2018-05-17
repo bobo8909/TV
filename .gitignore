@@ -59,3 +59,5 @@
 /BCM_TV.si4project/Backup/*.c
 /BCM_TV.si4project/cache/parse/*.sisc
 /CODE/TV_STM32/USER/*.lubo1
+/CODE/TV_STM32.si4project/Backup/*.htm
+/CODE/TV_STM32.si4project/*.SearchResults

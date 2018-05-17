@@ -6,6 +6,7 @@ void AcceleratorControl(u16 AcceleratorVal)
 	DAC_SetChannel1Data(DAC_Align_12b_R,AcceleratorVal);
 }
 
+/*输出油门信号*/
 void DAC_task(void)
 {
 	#if ZXKZ_BOARD	
@@ -22,7 +23,7 @@ void DAC_task(void)
 		
 		AD5734R_Control(DABuf);
 		
-	#elif STM32_BOARD
+	#elif STM32_BOARD /*使用STM32内部的DAC模块进行输出*/
 	
 		u16 DACbuf[2] = {0};
 
