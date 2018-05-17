@@ -15,7 +15,9 @@ void Encoder_task(void)
 	{
 		g_TIMFlag.bits.EncoderFlag = 0;
 		n_Counter =(u16) TIM_GetCounter(TIM1);
+		
 		RotationalSpeed = DEGREEMAX * 10 * n_Counter / 4 / MAXPPR;
+
 
 		//g_BCM3SendVal.FrontSpeedHigh = 
 		

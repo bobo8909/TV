@@ -32,7 +32,7 @@ CanRxMsg CANSendBuf[3] = {0,0,0,0,0,{0},0};
 
 STRUCT_GLOBAL_FLAG g_StructGlobalFlag = {0};
 STRUCT_EXTI_FLAG g_StructExtiFlag = {0};
-STRUCT_BCM_STATUS g_StructBCMStatus = {MANNED};
+STRUCT_BCM_STATUS g_StructBCMStatus = {0};
 
 static void System_clock(void)
 {	
