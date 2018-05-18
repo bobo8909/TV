@@ -18,16 +18,16 @@ int main(void)
 		/*处理接收到的CAN数据*/
 		CANrecv_task();
 		
-	    #if STM32_BOARD
-	    	/*PWM的输入输出处理*/		
-			IO_task();
-	        AngleSensor_task();
-			ADC_task();
-			DAC_task();
-			SpeedCal_task();
-			//AdditionalAngleSensor_task();
-			Encoder_task();
-		#endif
+    #if STM32_BOARD
+    	/*PWM的输入输出处理*/		
+		IO_task();
+        AngleSensor_task();
+		ADC_task();
+		DAC_task();
+		SpeedCal_task();
+		//AdditionalAngleSensor_task();
+		Encoder_task();
+	#endif
 
 		#if JSDG_BOARD
 			IO_task();

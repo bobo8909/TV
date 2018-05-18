@@ -33,7 +33,7 @@ u8 CheckDrivingMode(void)
 **  Process Timing   :    Any Time
 **  Summary          :    -
 **  Arguments[Input] :    -
-**  Arguments[Output]:    ucTemp
+**  Arguments[Output]:    -
 **  Return Value     :    -
 ==================================================================================================================== */
 
@@ -47,7 +47,7 @@ void CheckIo(void)
 	}
 	else
 	{
-		if (READ_DRIVING_MODE == 0)
+		if (MANNED == CheckDrivingMode())
 		{
 			g_StructGlobalFlag.bits.DrivingModeSwitchFlag = 0;
 		}
@@ -151,7 +151,7 @@ void CheckIo(void)
 **  Function Name    :    Signal output 
 **  Process Timing   :    Any Time
 **  Summary          :    -
-**  Arguments[Input] :    ValControl
+**  Arguments[Input] :    -
 **  Arguments[Output]:    
 **  Return Value     :    -
 ==================================================================================================================== */
@@ -182,7 +182,6 @@ void IOControl(void)
 	/*当在无人模式下时，采集到下面的几个信号时不能做相应的控制动作*/
 	if(g_StructBCMStatus.DrivingMode == AUTOMATIC_DRIVING)
 	{
-		
 		return;
 	}
 
@@ -274,138 +273,10 @@ void IOControl(void)
 
 
 
-/* ====================================================================================================================
-**  Function Name    :    Anysis can and control The light
-**  Process Timing   :    Any  time
-**  Summary          :    -
-**  Arguments[Input] :    
-**  Arguments[Output]:    
-**  Return Value     :    -
-==================================================================================================================== */
-
-void CanControl(void)
-{		
-
-	
-		//g_StructGlobalFlag.bits.RecvVCU5Flag = 0;
-		//电喇叭控制
-		if(g_VCU5RecvVal.LIGHTSTATUS.bits.b_Klaxon == 0x01)   
-		{
-			KLAXON_SWITCH = ON;
-		}
-		else
-		{
-			KLAXON_SWITCH = OFF;
-		}
-
-		//挡位控制
-		if (g_VCU2RecvVal.CONTROLSIGNAL.bits.b_GearsControlSig == 0x00) //neutral gear 空挡
-		{
-			#if 0
-			D_GEAR = OFF;
-			R_GEAR = OFF;
-			#else
-			D_GEAR = ON;
-			R_GEAR = ON;
-			#endif
-
-			REVERSING_LIGHT = OFF;			
-			//printf("neutral gear\r\n");
-		}
-		else if(g_VCU2RecvVal.CONTROLSIGNAL.bits.b_GearsControlSig == 0x01)//forward gear 前进挡
-	    {
-	    	#if 0
-	    	D_GEAR = ON;
-			R_GEAR = OFF;   
-			#else
-	    	D_GEAR = OFF;
-			R_GEAR = ON;   
-			#endif
-
-			REVERSING_LIGHT = OFF;
-			//printf("forward gear\r\n");
-		}
-		else if(g_VCU2RecvVal.CONTROLSIGNAL.bits.b_GearsControlSig == 0x02)//reserve gear 后退挡
-		{
-			#if 0
-	    	D_GEAR = OFF;
-			R_GEAR = ON;  
-			#else
-	    	D_GEAR = ON;
-			R_GEAR = OFF;  
-			#endif
-			
-			REVERSING_LIGHT = ON;
-			//printf("reserve gear\r\n");
-		}
-		else
-		{
-			/*INVALID*/
-			printf("INVALID gear\r\n");
-		}
-
-		/*油门使能*/
-		if (g_VCU2RecvVal.CONTROLSIGNAL.bits.b_AcceleratorEnable == 0x01)
-		{
-			ACCELERATOR_ENABLE = ON;
-		}
-		else
-		{
-			ACCELERATOR_ENABLE = OFF;
-		}
-
-		/*近光灯*/
-		if (g_VCU5RecvVal.LIGHTSTATUS.bits.b_DippedHeadlight == 0x01)
-		{
-			DIPPED_HEADLIGHT = ON;
-			//printf("DIPPED_HEADLIGHT\r\n");
-		}
-		else 
-		{
-			DIPPED_HEADLIGHT = OFF;
-			//printf("INVALID gear\r\n");
-		}
-
-		/*远光灯*/
-		if (g_VCU5RecvVal.LIGHTSTATUS.bits.b_BeamLight == 0x01)
-		{
-			BEAN_LIGHT = ON;		
-		}
-		else 
-		{
-			BEAN_LIGHT = OFF;		
-		}
-
-		/*左转灯*/
-		if (g_VCU5RecvVal.LIGHTSTATUS.bits.b_TurnLeftLight == 0x01)
-		{
-			TURN_LEFT_LIGHT = ON;
-		}
-		else
-		{
-			TURN_LEFT_LIGHT = OFF;
-		}
-
-		/*右转灯*/
-		if (g_VCU5RecvVal.LIGHTSTATUS.bits.b_TurnRightLight == 0x01)
-		{
-			TURN_RIGHT_LIGHT = ON;
-		}
-		else
-		{
-			TURN_RIGHT_LIGHT = OFF;
-		}
-
-}
-
 void IO_task(void)
 {	
 	CheckIo();
 	
 	IOControl();
 	
-	if(g_StructBCMStatus.DrivingMode == AUTOMATIC_DRIVING)
-	{
-		CanControl();
-	}
 }
