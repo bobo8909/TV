@@ -126,7 +126,7 @@ static void CanControl(void)
 
 void CANrecv_task(void)
 {
-
+//	u8 busrec = 0;
 	if (CANRecvDataBuf[0].NewDataFlag == 1)
 	{
 	
@@ -202,6 +202,40 @@ void CANrecv_task(void)
 	{
 		CanControl();
 	}
+
+//	if(CAN_GetReceiveErrorCounter(CAN1) != 0)
+//	{
+//		busrec = CAN_GetReceiveErrorCounter(CAN1) ;
+//		printf("rec=%d\r\n",busrec);
+//	}
+#if 0
+	if(CAN_GetReceiveErrorCounter(CAN1) != 0)
+	{
+		busrec = CAN_GetReceiveErrorCounter(CAN1) ;
+		printf("grec=%d\r\n",busrec);
+	}
+	if (CAN_GetLSBTransmitErrorCounter(CAN1) != 0)
+	{
+		busrec = CAN_GetLSBTransmitErrorCounter(CAN1) ;
+		printf("gtec=%d\r\n",busrec);	
+	}
+	if(CAN_GetITStatus(CAN1,CAN_IT_LEC) == SET)
+	{
+		busrec = CAN_GetLSBTransmitErrorCounter(CAN1) ;
+		printf("gcan lec\r\n");
+		//CanModeInit(CAN_SJW_1tq,CAN_BS2_8tq, CAN_BS1_9tq, 8, CAN_Mode_Normal);//CAN普通模式初始化, 波特率250Kbps 	
+	}
+	
+	if(CAN_GetITStatus(CAN1,CAN_IT_BOF) == SET)
+	{
+		busrec = CAN_GetLSBTransmitErrorCounter(CAN1) ;
+		printf("gcan busoff\r\n");
+		//CanModeInit(CAN_SJW_1tq,CAN_BS2_8tq, CAN_BS1_9tq, 8, CAN_Mode_Normal);//CAN普通模式初始化, 波特率250Kbps 	
+	}
+
+	
+#endif
+
 }
 
 

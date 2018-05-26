@@ -55,7 +55,7 @@ void System_init(void)
     
     uart_init(115200);	 //串口初始化为115200
     
- 	CanModeInit(CAN_SJW_1tq,CAN_BS2_8tq, CAN_BS1_9tq, 8, CAN_Mode_Normal);//CAN普通模式初始化, 波特率500Kbps 
+ 	CanModeInit(CAN_SJW_1tq,CAN_BS2_2tq, CAN_BS1_3tq, 24, CAN_Mode_Normal);//CAN普通模式初始化, 波特率250Kbps 
  	
     IWDG_Init(4,1250);                                                   //与分频数为64,重载值为1250,溢出时间为2s
 
