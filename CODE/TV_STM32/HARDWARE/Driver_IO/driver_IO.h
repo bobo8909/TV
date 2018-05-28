@@ -16,16 +16,16 @@
 #define ACCELERATOR_ENABLE	PFout(11)//油门使能
 
 
-#define READ_DRIVING_MODE    GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_0)   //自动驾驶模式切换开关
-#define READ_KLAXON_SWITCH     GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_1)   //电喇叭开关
-#define READ_LIGHT_TURN_RIGHT  GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_2) //右转灯开关
-#define READ_LIGHT_TURN_LEFT   GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_3)  //左转灯开关
-#define READ_BEAN_LIGHT   GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_4) //远光灯开关
-#define READ_DIPPED_HEADLIGHT    GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_5)   //近光灯开关
-#define READ_D_GEAR        GPIO_ReadInputDataBit(GPIOD,GPIO_Pin_6)      //D挡开关
-#define READ_R_GEAR       GPIO_ReadInputDataBit(GPIOD,GPIO_Pin_7)      //R挡开关
-#define READ_BRAKE_CONTROL GPIO_ReadInputDataBit(GPIOD,GPIO_Pin_8)		//制动控制
-#define READ_ACCELERATOR	GPIO_ReadInputDataBit(GPIOD,GPIO_Pin_9)		//油门使能
+#define READ_DRIVING_MODE       PDin(0)//GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_0)   //自动驾驶模式切换开关
+#define READ_KLAXON_SWITCH      PDin(1)//GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_1)   //电喇叭开关
+#define READ_LIGHT_TURN_RIGHT   PDin(2)//GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_2) //右转灯开关
+#define READ_LIGHT_TURN_LEFT    PDin(3)//GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_3)  //左转灯开关
+#define READ_BEAN_LIGHT   	    PDin(4)//GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_4) //远光灯开关
+#define READ_DIPPED_HEADLIGHT	PDin(5)//    GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_5)   //近光灯开关
+#define READ_D_GEAR        		PDin(6)//GPIO_ReadInputDataBit(GPIOD,GPIO_Pin_6)      //D挡开关
+#define READ_R_GEAR       		PDin(7)//GPIO_ReadInputDataBit(GPIOD,GPIO_Pin_7)      //R挡开关
+#define READ_BRAKE_CONTROL 		PDin(8)//GPIO_ReadInputDataBit(GPIOD,GPIO_Pin_8)		//制动控制
+#define READ_ACCELERATOR		PDin(9)//GPIO_ReadInputDataBit(GPIOD,GPIO_Pin_9)		//油门使能
 
 
 void IO_init(void);
