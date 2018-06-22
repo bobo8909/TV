@@ -20,13 +20,16 @@ void AngleSensor_task(void)
 {
 	static u32 PWMVal[4] = {0};
 	
-	static int BackupPWM3OUT2 = 0;
-	static int BackupPWM4OUT2 = 0;
-	static int BackupPWM2OUT4 = 0;
-	static int BackupPWM3OUT4 = 0;
-
+	static u32 BackupPWM3OUT2 = 0;
+	static u32 BackupPWM4OUT2 = 0;
+	static u32 BackupPWM2OUT4 = 0;
+	static u32 BackupPWM3OUT4 = 0;
+//    static u8 i = 0;
 	u32 SendVal = 0;
-	
+
+    
+    //TIM_SetCompare1(TIM3, 18000); 
+    //TIM_SetCompare3(TIM3, 18000); 
 /*
 *已根据实际的频率进行了修改，把读取的占空比按照CAN协议发送出去
 */
@@ -39,11 +42,12 @@ void AngleSensor_task(void)
 		
 		TIM_SetCompare3(TIM2, BackupPWM2OUT4);
 		
-		printf("BackupPWM2OUT4 = %d\r\n", BackupPWM2OUT4);
+		//printf("P = %d\r\n", 10000 - (BackupPWM2OUT4 * 10000 / ARR_1KHz));
 		
 		if (g_VCU5RecvVal.DRIVING_MODE.bits.b_DrivingMode == AUTOMATIC_DRIVING)
 		{		
-			SendVal = BackupPWM2OUT4 * ARR_1KHz / TIM_SEND_RESOLUTION ;
+			SendVal = BackupPWM2OUT4 * TIM_SEND_RESOLUTION / ARR_1KHz ;
+            SendVal = 10000 - SendVal; 
 			g_BCM2SendVal.AngleSensorSignalPHigh = SendVal >> 8;
 			g_BCM2SendVal.AngleSensorSignalPLow = (u8)(SendVal & 0xFF);
 		}
@@ -56,11 +60,11 @@ void AngleSensor_task(void)
 		PWM4OUT2 = 0;
 
 		TIM_SetCompare1(TIM4, BackupPWM4OUT2);	
-		printf("BackupPWM4OUT2 = %d\r\n", BackupPWM4OUT2);
+		//printf("S = %d\r\n", BackupPWM4OUT2);
 
 		if (g_VCU5RecvVal.DRIVING_MODE.bits.b_DrivingMode == AUTOMATIC_DRIVING)
 		{
-			SendVal = BackupPWM4OUT2 * ARR_200Hz / TIM_SEND_RESOLUTION;
+			SendVal = BackupPWM4OUT2 * TIM_SEND_RESOLUTION / ARR_200Hz;
 			
 			g_BCM2SendVal.AngleSensorSignalSHigh = SendVal >> 8;
 			g_BCM2SendVal.AngleSensorSignalSLow = (u8)(SendVal & 0xFF);
@@ -68,16 +72,35 @@ void AngleSensor_task(void)
 	}
 
 	/*扭矩1*/
+#if 1    
+    #if 1
 	if (BackupPWM3OUT2 != PWM3OUT2) 
-	{
-		BackupPWM3OUT2 = PWM3OUT2;		
+    #else
+    if (PWM3OUT2Flag == 1)
+    #endif
+    {
+        PWM3OUT2Flag = 0;
+    #if 1
+        //if (((PWM3OUT2 - (int)BackupPWM3OUT2) > 10) ||((PWM3OUT2 - (int)BackupPWM3OUT2) < 0))
+		{
+		//BackupPWM3OUT2 = BackupPWM3OUT2 + 10;		
+		//BackupPWM3OUT2 = PWM3OUT2 + 100;		
+		BackupPWM3OUT2 = PWM3OUT2;
 		PWM3OUT2 = 0;
-		printf("BackupPWM3OUT2 = %d\r\n", BackupPWM3OUT2);	
+//		printf("T1 = %d\r\n", BackupPWM3OUT2*10000/ARR_2KHz);	
+		printf("T1 = %d\r\n", BackupPWM3OUT2);	
 
 		/*有人模式时输出PWM波，无人模式时把采集的数据发送给VCU*/
 		if (g_VCU5RecvVal.DRIVING_MODE.bits.b_DrivingMode == MANNED)
 		{
+		    #if 1
 			TIM_SetCompare1(TIM3, BackupPWM3OUT2);
+            //TIM_SetCompare3(TIM3, ARR_2KHz - BackupPWM3OUT2);
+            #else
+			TIM_SetCompare1(TIM3, ARR_2KHz -BackupPWM3OUT2);
+            TIM_SetCompare3(TIM3, BackupPWM3OUT2);
+
+            #endif
 		}
 		else
 		{
@@ -86,21 +109,39 @@ void AngleSensor_task(void)
 			g_BCM2SendVal.EPSMomentalSignal1High = SendVal >> 8;
 			g_BCM2SendVal.EPSMomentalSignal1Low = (u8)(SendVal & 0xFF);
 		}
+
+            }
+#if 0
+        else
+            {
+            //BackupPWM3OUT2 = BackupPWM3OUT2 - 100;            
+            printf("T11 = %d\r\n", BackupPWM3OUT2);  
+			TIM_SetCompare1(TIM3, BackupPWM3OUT2-10 );
+            TIM_SetCompare3(TIM3, ARR_2KHz - BackupPWM3OUT2+10 );
+
+        }
+        #endif
+       #endif
 	}
 	else
 	{
 		if (g_VCU5RecvVal.DRIVING_MODE.bits.b_DrivingMode == MANNED)
 		{
-			TIM_SetCompare1(TIM3, 18000);	
+			//TIM_SetCompare1(TIM3, 18000);	
+            //TIM_SetCompare3(TIM3, 18000);	
+			//TIM_SetCompare1(TIM3, 21600);//60%
 		}
 	}
-
+#endif
+#if 1
 	/*扭矩2*/
 	if(BackupPWM3OUT4 != PWM3OUT4)
 	{
-		BackupPWM3OUT4 = PWM3OUT4;		
+		//BackupPWM3OUT4 = PWM3OUT4 + 900;	
+		BackupPWM3OUT4 = PWM3OUT4;
 		PWM3OUT4 = 0;
-		printf("BackupPWM3OUT4 = %d\r\n", BackupPWM3OUT4);
+//		printf("T2 = %d\r\n", BackupPWM3OUT4*10000/ARR_2KHz);
+		printf("T2 = %d\r\n", BackupPWM3OUT4);
 		
 		/*有人模式时输出PWM波，无人模式时把采集的数据发送给VCU*/
 		if (g_VCU5RecvVal.DRIVING_MODE.bits.b_DrivingMode == MANNED)
@@ -119,10 +160,11 @@ void AngleSensor_task(void)
 	{		
 		if (g_VCU5RecvVal.DRIVING_MODE.bits.b_DrivingMode == MANNED)
 		{
-			TIM_SetCompare3(TIM3, 18000);
+	//		TIM_SetCompare3(TIM3, 18000);
+			//TIM_SetCompare3(TIM3, 14400);//40%
 		}
 	}
-
+#endif
 
 	
 	if(g_VCU5RecvVal.DRIVING_MODE.bits.b_DrivingMode == AUTOMATIC_DRIVING)

@@ -2,15 +2,25 @@
 #define __TIMER_H
 #include "sys.h"
 
+#define CAPPWM 1
 #define ARR_200Hz 9999
 #define PSC_200Hz 35
 
 #define ARR_1KHz 35999
 #define PSC_1KHz 1
-
-#define ARR_2KHz 35999
+#if CAPPWM
+#define ARR_2KHz 720
 #define PSC_2KHz 0
 
+#else
+#if 1
+#define ARR_2KHz 35999
+#define PSC_2KHz 0
+#else
+#define ARR_2KHz 5999
+#define PSC_2KHz 5
+#endif
+#endif
 #define ARR_2140Hz 33643
 #define PSC_2140Hz 0
 
@@ -40,6 +50,9 @@ extern int PWM3OUT2;
 extern int PWM3OUT4; 
 extern int PWM4OUT2; 				
 extern int PWM2OUT4; 
+
+extern u8 PWM3OUT2Flag;
+
 //extern u8 g_TIM2PluseCount;
 //extern u8 g_CANSpeedFlag;
 void TIM_INIT(void);
