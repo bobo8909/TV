@@ -42,7 +42,7 @@ typedef union
 	}bits;
 }STRUCT_TIMFLAG;
 extern STRUCT_TIMFLAG g_TIMFlag;
-
+#if 0
 extern u16 AngSensorAMinus;
 extern u16 AngSensorBMinus;
 
@@ -53,6 +53,12 @@ extern int PWM2OUT4;
 
 extern u8 PWM3OUT2Flag;
 
+#else
+extern int TIM4Flag;
+extern int iHeightCountTIM4;
+extern int iPeriodTIM4;
+
+#endif
 //extern u8 g_TIM2PluseCount;
 //extern u8 g_CANSpeedFlag;
 void TIM_INIT(void);

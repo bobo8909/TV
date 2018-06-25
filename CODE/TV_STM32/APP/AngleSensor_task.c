@@ -16,8 +16,10 @@
   *   
   * @retval None
   */
+	int DutyCycleTIM4 = 0;
 void AngleSensor_task(void)
 {
+	#if 0
 	static u32 PWMVal[4] = {0};
 	
 	static u32 BackupPWM3OUT2 = 0;
@@ -165,7 +167,6 @@ void AngleSensor_task(void)
 		}
 	}
 #endif
-
 	
 	if(g_VCU5RecvVal.DRIVING_MODE.bits.b_DrivingMode == AUTOMATIC_DRIVING)
 	{
@@ -184,5 +185,21 @@ void AngleSensor_task(void)
 		printf("PWMVal2 = %d\r\n", PWMVal[2]);
 		printf("PWMVal3 = %d\r\n", PWMVal[3]);
 	}
+#endif
+
+	
+	if(TIM4Flag == 1)
+	{
+		//DutyCycleTIM4 = iHeightCountTIM4 * 100 / iPeriodTIM4;
+		//printf("PE7 : %d\n", GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_7));
+//		printf("iHeightCount:%d\r\n",iHeightCountTIM4+1);
+//		printf("iPeriod:%d\r\n",iPeriodTIM4+1);
+		printf("DutyCycle : %02d.%02d%%\r\n", (iHeightCountTIM4+1) * 100 / (iPeriodTIM4+1), (iHeightCountTIM4+1) * 10000 / (iPeriodTIM4+1) %100);
+		DutyCycleTIM4 = 0;
+		iHeightCountTIM4 = 0;
+		iPeriodTIM4 = 0;
+		TIM4Flag = 0;
+	}
+	//delay_ms(100);
 }
 
