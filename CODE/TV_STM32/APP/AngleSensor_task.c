@@ -19,13 +19,14 @@
 	int DutyCycleTIM4 = 0;
 void AngleSensor_task(void)
 {
-	#if 0
+	#if 1
 	static u32 PWMVal[4] = {0};
 	
 	static u32 BackupPWM3OUT2 = 0;
 	static u32 BackupPWM4OUT2 = 0;
 	static u32 BackupPWM2OUT4 = 0;
 	static u32 BackupPWM3OUT4 = 0;
+    static u32 BackupPWM5OUT2 = 0;
 //    static u8 i = 0;
 	u32 SendVal = 0;
 
@@ -36,15 +37,33 @@ void AngleSensor_task(void)
 *已根据实际的频率进行了修改，把读取的占空比按照CAN协议发送出去
 */
 	//if(g_VCU5RecvVal.DRIVING_MODE.bits.b_DrivingMode == MANNED)
+	#if 1
+    
+    if ((BackupPWM2OUT4 != PWM2OUT4) && (BackupPWM4OUT2 != PWM4OUT2))
+	{
+		BackupPWM2OUT4 = PWM2OUT4;	
+		BackupPWM4OUT2 = PWM4OUT2;		
+		PWM2OUT4 = 0;
+		PWM4OUT2 = 0;
+
+		//TIM_SetCompare1(TIM4, BackupPWM4OUT2);	
+		//printf("S = %d\r\n", BackupPWM4OUT2);
+		printf("S = %d\r\n", (BackupPWM4OUT2 * 10000 / ARR_200Hz));
+		
+		//TIM_SetCompare3(TIM2, BackupPWM2OUT4);
+		
+		printf("P = %d\r\n", 10000 - (BackupPWM2OUT4 * 10000 / ARR_1KHz));
+    }
+    #else
 	/*转角P*/
     if (BackupPWM2OUT4 != PWM2OUT4) 
 	{
 		BackupPWM2OUT4 = PWM2OUT4;	
 		PWM2OUT4 = 0;
 		
-		TIM_SetCompare3(TIM2, BackupPWM2OUT4);
+		//TIM_SetCompare3(TIM2, BackupPWM2OUT4);
 		
-		//printf("P = %d\r\n", 10000 - (BackupPWM2OUT4 * 10000 / ARR_1KHz));
+		printf("P = %d\r\n", 10000 - (BackupPWM2OUT4 * 10000 / ARR_1KHz));
 		
 		if (g_VCU5RecvVal.DRIVING_MODE.bits.b_DrivingMode == AUTOMATIC_DRIVING)
 		{		
@@ -61,8 +80,9 @@ void AngleSensor_task(void)
 		BackupPWM4OUT2 = PWM4OUT2;		
 		PWM4OUT2 = 0;
 
-		TIM_SetCompare1(TIM4, BackupPWM4OUT2);	
+		//TIM_SetCompare1(TIM4, BackupPWM4OUT2);	
 		//printf("S = %d\r\n", BackupPWM4OUT2);
+		printf("S = %d\r\n", (BackupPWM4OUT2 * 10000 / ARR_200Hz));
 
 		if (g_VCU5RecvVal.DRIVING_MODE.bits.b_DrivingMode == AUTOMATIC_DRIVING)
 		{
@@ -72,7 +92,7 @@ void AngleSensor_task(void)
 			g_BCM2SendVal.AngleSensorSignalSLow = (u8)(SendVal & 0xFF);
 		}
 	}
-
+#endif
 	/*扭矩1*/
 #if 1    
     #if 1
@@ -90,13 +110,13 @@ void AngleSensor_task(void)
 		BackupPWM3OUT2 = PWM3OUT2;
 		PWM3OUT2 = 0;
 //		printf("T1 = %d\r\n", BackupPWM3OUT2*10000/ARR_2KHz);	
-		printf("T1 = %d\r\n", BackupPWM3OUT2);	
+//		printf("T1 = %d  ", BackupPWM3OUT2);	
 
 		/*有人模式时输出PWM波，无人模式时把采集的数据发送给VCU*/
 		if (g_VCU5RecvVal.DRIVING_MODE.bits.b_DrivingMode == MANNED)
 		{
 		    #if 1
-			TIM_SetCompare1(TIM3, BackupPWM3OUT2);
+			//TIM_SetCompare1(TIM3, BackupPWM3OUT2);
             //TIM_SetCompare3(TIM3, ARR_2KHz - BackupPWM3OUT2);
             #else
 			TIM_SetCompare1(TIM3, ARR_2KHz -BackupPWM3OUT2);
@@ -125,30 +145,37 @@ void AngleSensor_task(void)
         #endif
        #endif
 	}
-	else
-	{
-		if (g_VCU5RecvVal.DRIVING_MODE.bits.b_DrivingMode == MANNED)
-		{
-			//TIM_SetCompare1(TIM3, 18000);	
-            //TIM_SetCompare3(TIM3, 18000);	
-			//TIM_SetCompare1(TIM3, 21600);//60%
-		}
-	}
+//	else
+//	{
+//		if (g_VCU5RecvVal.DRIVING_MODE.bits.b_DrivingMode == MANNED)
+//		{
+//			//TIM_SetCompare1(TIM3, 18000);	
+//            //TIM_SetCompare3(TIM3, 18000);	
+//			//TIM_SetCompare1(TIM3, 21600);//60%
+//		}
+//	}
 #endif
 #if 1
 	/*扭矩2*/
-	if(BackupPWM3OUT4 != PWM3OUT4)
+//	if(BackupPWM3OUT4 != PWM3OUT4)
+    if(BackupPWM5OUT2 != PWM5OUT2)
 	{
+	    #if 0
 		//BackupPWM3OUT4 = PWM3OUT4 + 900;	
 		BackupPWM3OUT4 = PWM3OUT4;
 		PWM3OUT4 = 0;
-//		printf("T2 = %d\r\n", BackupPWM3OUT4*10000/ARR_2KHz);
-		printf("T2 = %d\r\n", BackupPWM3OUT4);
-		
+		printf("T2 = %d\r\n", BackupPWM3OUT4*10000/ARR_2KHz);
+//		printf("T2 = %d\r\n", BackupPWM3OUT4);
+		#else
+		BackupPWM5OUT2 = PWM5OUT2;
+		PWM5OUT2 = 0;
+//		printf("T2 = %d\r\n", BackupPWM5OUT2*10000/ARR_2140Hz);
+
+        #endif
 		/*有人模式时输出PWM波，无人模式时把采集的数据发送给VCU*/
 		if (g_VCU5RecvVal.DRIVING_MODE.bits.b_DrivingMode == MANNED)
 		{
-			TIM_SetCompare3(TIM3, BackupPWM3OUT4);	
+			//TIM_SetCompare3(TIM3, BackupPWM3OUT4);	
 		}
 		else
 		{
@@ -192,8 +219,8 @@ void AngleSensor_task(void)
 	{
 		//DutyCycleTIM4 = iHeightCountTIM4 * 100 / iPeriodTIM4;
 		//printf("PE7 : %d\n", GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_7));
-//		printf("iHeightCount:%d\r\n",iHeightCountTIM4+1);
-//		printf("iPeriod:%d\r\n",iPeriodTIM4+1);
+		printf("iHeightCount:%d\r\n",iHeightCountTIM4+1);
+		printf("iPeriod:%d\r\n",iPeriodTIM4+1);
 		printf("DutyCycle : %02d.%02d%%\r\n", (iHeightCountTIM4+1) * 100 / (iPeriodTIM4+1), (iHeightCountTIM4+1) * 10000 / (iPeriodTIM4+1) %100);
 		DutyCycleTIM4 = 0;
 		iHeightCountTIM4 = 0;

@@ -16,9 +16,11 @@ void IO_init(void)
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPD; //设置成上拉输入
  	GPIO_Init(GPIOD, &GPIO_InitStructure);//初始化GPIOD 0,1,2,3,4,5,6,7
 
-	GPIO_InitStructure.GPIO_Pin  =GPIO_Pin_8;
+	GPIO_InitStructure.GPIO_Pin  =GPIO_Pin_12;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP; //
- 	GPIO_Init(GPIOC, &GPIO_InitStructure);//
+ 	GPIO_Init(GPIOD, &GPIO_InitStructure);//
+	GPIO_ResetBits(GPIOD,GPIO_Pin_12);
+ 	
 		
 }
 

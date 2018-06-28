@@ -27,7 +27,7 @@
 
 /*global value*/
 STRUCT_TIMFLAG g_TIMFlag;
-#if 0
+#if 1
  u8 TIM3CH2_CAPTURE_STA = 0;	//	通道2输入捕获标志，高两位做捕获标志，低6位做溢出标志位	
 static u16 TIM3CH2_CAPTURE_UPVAL;
 static u16 TIM3CH2_CAPTURE_DOWNVAL;
@@ -49,7 +49,7 @@ static u32 tim4_T2;
 static u16 tem4pup2;
 int PWM4OUT2; 				//输出占空比
 #endif
-#if 0 
+#if 1
 static u8 TIM5CH2_CAPTURE_STA = 0;	//	通道2输入捕获标志，高两位做捕获标志，低6位做溢出标志位	
 static u16 TIM5CH2_CAPTURE_UPVAL;
 static u16 TIM5CH2_CAPTURE_DOWNVAL;
@@ -73,7 +73,7 @@ static u16 tem2pup2;
 int PWM2OUT2; 				//输出占空比
 #endif
 
-#if 0
+#if 1
 static u8 TIM2CH4_CAPTURE_STA = 0;	//	通道2输入捕获标志，高两位做捕获标志，低6位做溢出标志位	
 static u16 TIM2CH4_CAPTURE_UPVAL;
 static u16 TIM2CH4_CAPTURE_DOWNVAL;
@@ -264,7 +264,7 @@ u8 TIM6PluseFunc(void)
 }
 #endif
 
-#if 0//STM32_BOARD
+#if STM32_BOARD
 //PWM输出初始化
 //arr：自动重装值
 //psc：时钟预分频数
@@ -324,8 +324,8 @@ static void TIM3_Torque_Init(u16 arr,u16 psc)
 	TIM3_ICInitStructure.TIM_ICPolarity = TIM_ICPolarity_Rising;	//上升沿捕获
 	TIM3_ICInitStructure.TIM_ICSelection = TIM_ICSelection_DirectTI; //映射到TI1上
 #if 1
-	TIM3_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV4;	  //配置输入分频，不分频 
-	TIM3_ICInitStructure.TIM_ICFilter = 0xF;	  //IC1F=0000 配置输入滤波器 不滤波
+	TIM3_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV2;	  //配置输入分频，不分频 
+	TIM3_ICInitStructure.TIM_ICFilter = 0x09;	  //IC1F=0000 配置输入滤波器 不滤波
 #else
 	TIM3_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV1;	  //配置输入分频，不分频 
 	TIM3_ICInitStructure.TIM_ICFilter = 0;	  //IC1F=0000 配置输入滤波器 不滤波
@@ -551,6 +551,7 @@ static void TIM4_AngleS_Init(u16 arr,u16 psc)
 
 }
 
+#if 1
 void TIM4_IRQHandler(void)   //TIM4中断
 {
 	if ((TIM4CH2_CAPTURE_STA & 0X80) == 0)		//还未成功捕获
@@ -587,11 +588,11 @@ void TIM4_IRQHandler(void)   //TIM4中断
 
 
 }
-
+#endif
 
 /**********************************TIM5******************************/
 
-#if 0
+#if 1
 //PWM输出初始化
 //arr：自动重装值
 //psc：时钟预分频数
@@ -651,10 +652,10 @@ static void TIM5_PWM_Init(u16 arr,u16 psc)
 	TIM5_ICInitStructure.TIM_Channel = TIM_Channel_2; //CC1S=01 	选择输入端 IC1映射到TI1上
 	TIM5_ICInitStructure.TIM_ICPolarity = TIM_ICPolarity_Rising;	//上升沿捕获
 	TIM5_ICInitStructure.TIM_ICSelection = TIM_ICSelection_DirectTI; //映射到TI1上
-	TIM5_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV1;	  //配置输入分频，不分频 
-	TIM5_ICInitStructure.TIM_ICFilter = 0x00;	  //IC1F=0000 配置输入滤波器 不滤波
+	TIM5_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV2;	  //配置输入分频，不分频 
+	TIM5_ICInitStructure.TIM_ICFilter = 0x09;	  //IC1F=0000 配置输入滤波器 不滤波
 	TIM_ICInit(TIM5, &TIM5_ICInitStructure);
-#if 1
+#if 0
 		//CH3	PWM输出
 	TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM2; //选择定时器模式:TIM脉冲宽度调制模式2
 	TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable; //比较输出使能
@@ -681,7 +682,7 @@ static void TIM5_PWM_Init(u16 arr,u16 psc)
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE; //IRQ通道被使能
 	NVIC_Init(&NVIC_InitStructure);   //根据NVIC_InitStruct中指定的参数初始化外设NVIC寄存器
 
-	TIM_ITConfig(TIM5,  TIM_IT_CC2 | TIM_IT_CC4,
+	TIM_ITConfig(TIM5,  TIM_IT_CC2 ,
 			ENABLE);   //不允许更新中断，允许CC2IE捕获中断
 	
  
@@ -702,7 +703,7 @@ void TIM5_IRQHandler(void)   //TIM3中断
 				TIM5CH2_CAPTURE_DOWNVAL = TIM_GetCapture2(TIM5);//记录下此时的定时器计数值
 				if (TIM5CH2_CAPTURE_DOWNVAL < TIM5CH2_CAPTURE_UPVAL)
 				{
-					tim5_T2 = ARR_2KHz;
+					tim5_T2 = ARR_2140Hz;
 				}
 				else
 					tim5_T2 = 0;
@@ -716,13 +717,13 @@ void TIM5_IRQHandler(void)   //TIM3中断
 			else //发生捕获时间但不是下降沿，第一次捕获到上升沿，记录此时的定时器计数值
 			{
 				TIM5CH2_CAPTURE_UPVAL = TIM_GetCapture2(TIM5);		//获取上升沿数据
-                PWM5OUT2 = 0;
+                //PWM5OUT2 = 0;
 				TIM5CH2_CAPTURE_STA |= 0X40;		//标记已捕获到上升沿
 				TIM_OC2PolarityConfig(TIM5, TIM_ICPolarity_Falling);//设置为下降沿捕获
 			}
 		}
 	}
-#if 1
+#if 0
 	if ((TIM5CH4_CAPTURE_STA & 0X80) == 0)		//还未成功捕获
 	{
 		if (TIM_GetITStatus(TIM5, TIM_IT_CC4) != RESET)		//捕获2发生捕获事件
@@ -733,7 +734,7 @@ void TIM5_IRQHandler(void)   //TIM3中断
 				TIM5CH4_CAPTURE_DOWNVAL = TIM_GetCapture4(TIM5);//记录下此时的定时器计数值
 				if (TIM5CH4_CAPTURE_DOWNVAL < TIM5CH4_CAPTURE_UPVAL)
 				{
-					tim5_T4 = ARR_2KHz;
+					tim5_T4 = ARR_2140Hz;
 				}
 				else
 					tim5_T4 = 0;
@@ -1023,7 +1024,7 @@ void TIM5_IRQHandler(void)
 
 #endif
 
-#if 0//STM32_BOARD
+#if STM32_BOARD
 void TIM1_EncoderInit(u16 arr,u16 psc)
 {  
 	GPIO_InitTypeDef GPIO_InitStructure;
@@ -1106,6 +1107,7 @@ void TIM4_Cap_Init(u16 arr,u16 psc)
 }
 
 int TIM4Flag = 0;
+#if 0
 void TIM4_IRQHandler(void)
 { 
     TIM_ClearITPendingBit(TIM4, TIM_IT_CC2); 
@@ -1116,7 +1118,7 @@ void TIM4_IRQHandler(void)
 		TIM4Flag = 1;
 	}
 }
-
+#endif
 
 //TIM3 PWM2?·?3?ê??ˉ 
 //PWMê?3?3?ê??ˉ
@@ -1211,15 +1213,15 @@ void TIM7_IRQHandler(void)	 //TIM2中断
 	{
 		TIM_ClearITPendingBit(TIM7, TIM_IT_Update  );  //清除TIMx更新中断标志
 		PWMOutT1++;
-		if(PWMOutT1 <=  20)
+		if(PWMOutT1 <=  25)
 		{
-			PCout(8) = 1;
+			PDout(12) = 1;
 		}
 		else
 		{
-			PCout(8) = 0;
+			PDout(12) = 0;
 		}
-		if(PWMOutT1 == 100)
+		if(PWMOutT1 == 50)
 		{
 			PWMOutT1 = 0;
 		}
@@ -1231,12 +1233,13 @@ void TIM_INIT(void)
 {
 
 	TIM6_Init(999, 71);// 1kHz
-	TIM7_Init(179,1);
+	//TIM7_Init(359,1);
 	
- 	TIM4_Cap_Init(0xFFFF ,71);	//ò?1Mhzμ??μ?ê??êy 
-	TIM8_PWM_Init(35999,0);	 //2?·??μ?￡PWM?μ?ê=72000000/72/2000=50hz
-	TIM_SetCompare1(TIM3,18000);
-	#if 0//STM32_BOARD
+ 	//TIM4_Cap_Init(0xFFFF ,71);	//ò?1Mhzμ??μ?ê??êy 
+	//TIM8_PWM_Init(999,71);	 //2?·??μ?￡PWM?μ?ê=72000000/72/2000=50hz
+    //TIM3_Torque_Init(ARR_2KHz, PSC_2KHz);       //不分频。PWM频率=72 000 000/(0+1)(35999+1)=2Khz
+	//TIM_SetCompare1(TIM3,18000);
+	#if STM32_BOARD
 	
 		TIM1_EncoderInit(EncoderArr, EncoderPSC);
 	
@@ -1244,6 +1247,7 @@ void TIM_INIT(void)
 
 		TIM3_Torque_Init(ARR_2KHz, PSC_2KHz); 		//不分频。PWM频率=72 000 000/(0+1)(35999+1)=2Khz
         //TIM3_Torque_Init(ARR_200Hz, PSC_200Hz);
+        TIM5_PWM_Init(ARR_2140Hz,PSC_2140Hz);
 
 		//	TIM3_Torque_Init(4999,71);  //不分频。PWM频率=72000000/72=1MHz
 		//	TIM4_Init(0XFFFF,72-1); //以1Mhz的频率计数 
@@ -1257,8 +1261,8 @@ void TIM_INIT(void)
 			//TIM_SetCompare1(TIM5,5000); 		
 			//TIM_SetCompare3(TIM5,30000);
 			
-            TIM_SetCompare1(TIM3, 18000); 
-            TIM_SetCompare3(TIM3, 18000); 
+            //TIM_SetCompare1(TIM3, 18000); 
+            //TIM_SetCompare3(TIM3, 18000); 
             
            // TIM_SetCompare1(TIM3, 5000); 
            // TIM_SetCompare3(TIM3, 5000); 
