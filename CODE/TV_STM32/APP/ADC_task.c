@@ -9,7 +9,11 @@ void ADC_task(void)
 //	u16 printfad = 0;
 
 	/*AD采样的是12bit，需要转换成14bit*/
+#if STM32_EVALUATION
 	ADCbuf = Get_Adc_Average(ADC_Channel_10,10) << 2;
+#else
+    ADCbuf = Get_Adc_Average(ADC_Channel_12,10) << 2;
+#endif
 //	printfad = Get_Adc_Average(ADC_Channel_10,10) ;
 
 //	printf("ADCbuf = %d\r\n",printfad);

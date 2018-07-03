@@ -36,15 +36,16 @@ void AngleSensor_task(void)
 /*
 *已根据实际的频率进行了修改，把读取的占空比按照CAN协议发送出去
 */
+    //printfTIM5();
 	//if(g_VCU5RecvVal.DRIVING_MODE.bits.b_DrivingMode == MANNED)
 	#if 1
     
-    if ((BackupPWM2OUT4 != PWM2OUT4) && (BackupPWM4OUT2 != PWM4OUT2))
+    if ((BackupPWM2OUT4 != PWM2OUT4) || (BackupPWM4OUT2 != PWM4OUT2))
 	{
 		BackupPWM2OUT4 = PWM2OUT4;	
 		BackupPWM4OUT2 = PWM4OUT2;		
-		PWM2OUT4 = 0;
-		PWM4OUT2 = 0;
+		//PWM2OUT4 = 0;
+		//PWM4OUT2 = 0;
 
 		//TIM_SetCompare1(TIM4, BackupPWM4OUT2);	
 		//printf("S = %d\r\n", BackupPWM4OUT2);
@@ -53,6 +54,19 @@ void AngleSensor_task(void)
 		//TIM_SetCompare3(TIM2, BackupPWM2OUT4);
 		
 		printf("P = %d\r\n", 10000 - (BackupPWM2OUT4 * 10000 / ARR_1KHz));
+        
+		if (g_VCU5RecvVal.DRIVING_MODE.bits.b_DrivingMode == AUTOMATIC_DRIVING)
+		{		
+			SendVal = BackupPWM2OUT4 * TIM_SEND_RESOLUTION / ARR_1KHz ;
+            SendVal = 10000 - SendVal; 
+			g_BCM2SendVal.AngleSensorSignalPHigh = SendVal >> 8;
+			g_BCM2SendVal.AngleSensorSignalPLow = (u8)(SendVal & 0xFF);
+
+            
+			SendVal = BackupPWM4OUT2 * TIM_SEND_RESOLUTION / ARR_200Hz;
+			g_BCM2SendVal.AngleSensorSignalSHigh = SendVal >> 8;
+			g_BCM2SendVal.AngleSensorSignalSLow = (u8)(SendVal & 0xFF);
+		}
     }
     #else
 	/*转角P*/
@@ -109,8 +123,8 @@ void AngleSensor_task(void)
 		//BackupPWM3OUT2 = PWM3OUT2 + 100;		
 		BackupPWM3OUT2 = PWM3OUT2;
 		PWM3OUT2 = 0;
-//		printf("T1 = %d\r\n", BackupPWM3OUT2*10000/ARR_2KHz);	
-//		printf("T1 = %d  ", BackupPWM3OUT2);	
+		printf("T1 = %d\r\n", BackupPWM3OUT2*10000/ARR_2KHz);	
+//		printf("T1 = %d\r\n", BackupPWM3OUT2);	
 
 		/*有人模式时输出PWM波，无人模式时把采集的数据发送给VCU*/
 		if (g_VCU5RecvVal.DRIVING_MODE.bits.b_DrivingMode == MANNED)
@@ -169,7 +183,8 @@ void AngleSensor_task(void)
 		#else
 		BackupPWM5OUT2 = PWM5OUT2;
 		PWM5OUT2 = 0;
-//		printf("T2 = %d\r\n", BackupPWM5OUT2*10000/ARR_2140Hz);
+//        printf("T2 = %d\r\n", BackupPWM5OUT2);
+		printf("T2 = %d\r\n", BackupPWM5OUT2*10000/ARR_2140Hz);
 
         #endif
 		/*有人模式时输出PWM波，无人模式时把采集的数据发送给VCU*/
@@ -185,14 +200,14 @@ void AngleSensor_task(void)
 			g_BCM2SendVal.EPSMomentalSignal2Low = (u8)(SendVal & 0xFF);
 		}
 	}
-	else
-	{		
-		if (g_VCU5RecvVal.DRIVING_MODE.bits.b_DrivingMode == MANNED)
-		{
-	//		TIM_SetCompare3(TIM3, 18000);
-			//TIM_SetCompare3(TIM3, 14400);//40%
-		}
-	}
+//	else
+//	{		
+//		if (g_VCU5RecvVal.DRIVING_MODE.bits.b_DrivingMode == MANNED)
+//		{
+//	//		TIM_SetCompare3(TIM3, 18000);
+//			//TIM_SetCompare3(TIM3, 14400);//40%
+//		}
+//	}
 #endif
 	
 	if(g_VCU5RecvVal.DRIVING_MODE.bits.b_DrivingMode == AUTOMATIC_DRIVING)
@@ -214,7 +229,7 @@ void AngleSensor_task(void)
 	}
 #endif
 
-	
+	#if 0
 	if(TIM4Flag == 1)
 	{
 		//DutyCycleTIM4 = iHeightCountTIM4 * 100 / iPeriodTIM4;
@@ -227,6 +242,7 @@ void AngleSensor_task(void)
 		iPeriodTIM4 = 0;
 		TIM4Flag = 0;
 	}
+    #endif
 	//delay_ms(100);
 }
 

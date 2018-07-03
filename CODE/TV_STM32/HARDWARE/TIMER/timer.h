@@ -51,6 +51,7 @@ extern int PWM4OUT2;
 extern int PWM2OUT4; 
 extern int PWM5OUT2;
 extern u8 PWM3OUT2Flag;
+//void printfTIM5(void);
 
 #else
 #endif
