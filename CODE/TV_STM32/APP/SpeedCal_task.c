@@ -1,5 +1,7 @@
 #include "SpeedCal_task.h"
 
+#define SPEEDREAD PEin(11)
+
 #define PI 3.1415f
 
 #define R 0.268f
@@ -17,16 +19,17 @@ static void SpeedCal(void)
 	if(g_StructExtiFlag.bits.SpeedCalFlag == 1)
 	{
 		g_StructExtiFlag.bits.SpeedCalFlag = 0;
-		
+        
+		g_StructExtiFlag.bits.SpeedCalTimeoutFlag = 0;
 #if STM32_BOARD 
 		SpeedN = (u16)SpeedPluseFunc();
-		printf("SpeedN = %d\r\n",SpeedN);
+		//printf("SpeedN = %d\r\n",SpeedN);
 		SpeedV = Speed(SpeedN);
 		SpeedCANVal = SpeedV / SPEED_RESOLUTION;
 
 
 		g_BCM1SendVal.SpeedVal = SpeedCANVal;
-		printf("g_BCM1SendVal.SpeedVal = 0x%2x\r\n",g_BCM1SendVal.SpeedVal);
+		printf("g_BCM1SendVal.SpeedVal = %02f\r\n",SpeedV);
 
 		//g_BCM1SendVal.SpeedVal = 0x22;
 		//g_BCM2SendVal.AngleSensorSignalPHigh = 0x11;
@@ -34,6 +37,11 @@ static void SpeedCal(void)
 #endif
 
 	}
+    else
+    {
+        g_StructExtiFlag.bits.SpeedCalTimeoutFlag = 1;
+        
+    }
 }
 
 void SpeedCal_task(void)

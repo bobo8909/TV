@@ -103,7 +103,7 @@ u8 CanModeInit(u8 tsjw,u8 tbs2,u8 tbs1,u16 brp,u8 mode)
 	CAN_ITConfig(CAN1,CAN_IT_FMP0,ENABLE);//FIFO0消息挂号中断允许.	
 	
   	NVIC_InitStructure.NVIC_IRQChannel = USB_LP_CAN1_RX0_IRQn;
-  	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;     // 主优先级为0
+  	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;     // 主优先级为0
   	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;            // 次优先级为0
   	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
   	NVIC_Init(&NVIC_InitStructure);
@@ -112,7 +112,7 @@ u8 CanModeInit(u8 tsjw,u8 tbs2,u8 tbs1,u16 brp,u8 mode)
 	CAN_ITConfig(CAN1,CAN_IT_EWG|CAN_IT_EPV|CAN_IT_BOF|CAN_IT_LEC|CAN_IT_ERR,ENABLE);
 
   	NVIC_InitStructure.NVIC_IRQChannel = CAN1_SCE_IRQn;
-  	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;     // 主优先级为0
+  	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;     // 主优先级为0
   	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;            // 次优先级为1
   	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
   	NVIC_Init(&NVIC_InitStructure);

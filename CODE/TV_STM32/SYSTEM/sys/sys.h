@@ -74,12 +74,12 @@ typedef union
 		{
 			u8 SpeedCalFlag : 1;
 			u8 SpeedStartFlag : 1;
-			u8 ExtiAngSensorAStartFlag : 1;
-			u8 ExtiAngSensorBStartFlag : 1;
-			u8 ExtiAngSensorAFlag : 1;
-			u8 ExtiAngSensorBFlag : 1;
-			u8 ExtiAngSensorACalFlag : 1;
-			u8 ExtiAngSensorBCalFlag : 1;
+			u8 SpeedCalTimeoutFlag : 1;
+			u8 b3 : 1;
+			u8 b4 : 1;
+			u8 b5 : 1;
+			u8 b6 : 1;
+			u8 b7 : 1;
 		}bits;
 }STRUCT_EXTI_FLAG;
 extern STRUCT_EXTI_FLAG g_StructExtiFlag;

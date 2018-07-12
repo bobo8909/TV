@@ -14,14 +14,26 @@
 u8 CheckDrivingMode(void)
 {
 	u8 DrivingMode;
-	
-	if (READ_DRIVING_MODE == 1) 	   //automatic driving switch detect
+	static u8 flag1= 0,flag2= 0;
+	if (READ_DRIVING_MODE == 0) 	   //automatic driving switch detect
 	{	
 		DrivingMode = AUTOMATIC_DRIVING;
+        if(flag1 == 0)
+        {
+            printf("auto\r\n");
+            flag1 = 1;
+            flag2 = 0;
+            }
 	}
 	else
 	{
 		DrivingMode = MANNED;
+        if(flag2 ==0 )
+            {
+        printf("manned\r\n");
+        flag1 = 0;
+        flag2 = 1;
+            }
 	}
 	
 	return DrivingMode;
@@ -59,6 +71,7 @@ void CheckIo(void)
 	}
 	else
 	{
+	#if 0
 		if (READ_BRAKE_CONTROL == 0x00)
 		{
 			if (g_BCM1SendVal.SpeedVal == 0x00)
@@ -69,18 +82,19 @@ void CheckIo(void)
 			else
 			{
 				BRAKE_CONTROL = ON;
-				D_GEAR = OFF;
-				R_GEAR = OFF;
+				D_GEAR = ON;
+				R_GEAR = ON;
 				AcceleratorControl(OFF);
             }
 		}
+        #endif
 	}
 	
 	/*************************************	
 		这里还差一个转角传感器异常的判断
 	*************************************/
 		
-	if (READ_KLAXON_SWITCH == 0x01)       //电喇叭开关检测
+	if (READ_KLAXON_SWITCH == 0x00)       //电喇叭开关检测
 	{
 		g_BCM1SendVal.LIGHTSTATUS.bits.KlaxonSignal = 0x01;
 	}
@@ -89,7 +103,7 @@ void CheckIo(void)
 		g_BCM1SendVal.LIGHTSTATUS.bits.KlaxonSignal = 0x00;
 	}
 	
-	if (READ_LIGHT_TURN_RIGHT == 0x01)   //右转灯开关检测
+	if (READ_LIGHT_TURN_RIGHT == 0x00)   //右转灯开关检测
 	{
 		g_BCM1SendVal.LIGHTSTATUS.bits.TurnRightSignal = 0x01;
 	}
@@ -98,7 +112,7 @@ void CheckIo(void)
 		g_BCM1SendVal.LIGHTSTATUS.bits.TurnRightSignal = 0x00;
 	}
 	
-	if (READ_LIGHT_TURN_LEFT == 0x01)    //左转灯开关检测
+	if (READ_LIGHT_TURN_LEFT == 0x00)    //左转灯开关检测
 	{
 		g_BCM1SendVal.LIGHTSTATUS.bits.TurnLeftSignal = 0x01;
 	}
@@ -107,41 +121,56 @@ void CheckIo(void)
 		g_BCM1SendVal.LIGHTSTATUS.bits.TurnLeftSignal = 0x00;
 	}
 	
-	if (READ_BEAN_LIGHT == 0x01)    //远光灯开关检测
+	if (READ_BEAN_LIGHT == 0x00)    //远光灯开关检测
 	{
 		g_BCM1SendVal.LIGHTSTATUS.bits.BeamlightSignal = 0x01;
+        //printf("yuanguang kai\r\n");
 	}
 	else
 	{
 		g_BCM1SendVal.LIGHTSTATUS.bits.BeamlightSignal = 0x00;
+        //printf("yuanguang guan\r\n");
 	}
 	
-	if (READ_DIPPED_HEADLIGHT == 0x01)     //近光灯开关检测
+	if (READ_DIPPED_HEADLIGHT == 0x00)     //近光灯开关检测
 	{
 		g_BCM1SendVal.LIGHTSTATUS.bits.DippedLightSignal = 0x01;
+        //printf("jinguang kai\r\n");
 	}
 	else
 	{	
 		g_BCM1SendVal.LIGHTSTATUS.bits.DippedLightSignal = 0x00;
+        //printf("jinguang guan\r\n");
 	}
 	
-	if ((READ_D_GEAR == 0) &&(READ_R_GEAR == 0)) //挡位检测
+	if ((READ_D_GEAR == 1) &&(READ_R_GEAR == 1)) //挡位检测
 	{
 		g_BCM1SendVal.DRIVINGSTATUS.bits.GearStatusSignal = 0x00;
 	}
-	else if((READ_D_GEAR == 1) &&(READ_R_GEAR == 0))
+	else if((READ_D_GEAR == 0) &&(READ_R_GEAR == 1))
 	{
 		g_BCM1SendVal.DRIVINGSTATUS.bits.GearStatusSignal = 0x01;
 	}
-	else if((READ_D_GEAR == 0) &&(READ_R_GEAR == 1))
+	else if((READ_D_GEAR == 1) &&(READ_R_GEAR == 0))
 	{
 		g_BCM1SendVal.DRIVINGSTATUS.bits.GearStatusSignal = 0x02;
 	}
-	else if((READ_D_GEAR == 1) &&(READ_R_GEAR == 1))
+	else if((READ_D_GEAR == 0) &&(READ_R_GEAR == 0))
 	{
 		g_BCM1SendVal.DRIVINGSTATUS.bits.GearStatusSignal = 0x03;
 		/*invalid*/
 	}    
+
+	if (READ_BRAKE_CONTROL == 0x01)     //刹车灯
+	{
+		g_StructGlobalFlag.bits.StoplightFlag = 0x01;
+        //printf("brake 1\r\n");
+	}
+	else
+	{	
+		g_StructGlobalFlag.bits.StoplightFlag = 0x00;
+        //printf("brake 0\r\n");
+	}
 
 }
 
@@ -247,6 +276,7 @@ void IOControl(void)
 		R_GEAR = ON;
 		#endif
 		REVERSING_LIGHT = OFF;
+//        printf("D\r\n");
 	}
 	else if(g_BCM1SendVal.DRIVINGSTATUS.bits.GearStatusSignal == 0x02)//R档
 	{
@@ -257,17 +287,21 @@ void IOControl(void)
 		D_GEAR = ON;
 		R_GEAR = OFF;
 		#endif
+//        printf("R\r\n");
 		REVERSING_LIGHT = ON;
+        //printf("r dang\r\n");
 	}
 	
 	/*油门使能信号*/
-	if (READ_ACCELERATOR == 0x01)
+	if (READ_ACCELERATOR == 0x00)
 	{
 		ACCELERATOR_ENABLE = ON;
+        //printf("acc on\r\n");
 	}
 	else
 	{
 		ACCELERATOR_ENABLE = OFF;
+        //printf("acc off\r\n");
 	}
 }
 

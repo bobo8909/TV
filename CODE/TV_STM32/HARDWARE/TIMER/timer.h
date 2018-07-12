@@ -46,7 +46,6 @@ extern u16 AngSensorAMinus;
 extern u16 AngSensorBMinus;
 
 extern int PWM3OUT2;
-extern int PWM3OUT4; 
 extern int PWM4OUT2; 				
 extern int PWM2OUT4; 
 extern int PWM5OUT2;

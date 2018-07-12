@@ -136,13 +136,29 @@ u16 AngSensorBMinus = 0;
 static u16 LEDCount = 0;
 static u8 CANSendCount = 0;
 static u8 DACSendCount = 0;
+static u16 SpeedCalTimeoutCount = 0;
+static u16 T1T2Count = 0;
 void TIM6_IRQHandler(void)	 //TIM2中断
 {
 
 	if (TIM_GetITStatus(TIM6, TIM_IT_Update) != RESET)	//检查TIM2更新中断发生与否
 	{
 		TIM_ClearITPendingBit(TIM6, TIM_IT_Update  );  //清除TIMx更新中断标志
-
+        if(T1T2flag == 1)
+        {
+            T1T2flag = 0;
+            T1T2Count = 0;
+        }
+        else if(T1T2flag == 0)
+        {
+            T1T2Count++;
+            if(T1T2Count == 500)
+            {               
+            TIM_SetCompare3(TIM2,  16822); 
+             TIM_SetCompare1(TIM4, 18000);    
+             T1T2flag = 2;
+            }
+        }
 		/*Speed count*/
 		if(g_StructExtiFlag.bits.SpeedStartFlag == 1)
 		{
@@ -158,6 +174,20 @@ void TIM6_IRQHandler(void)	 //TIM2中断
 				}
 			}
 		}
+
+        /*速度计算，如果500ms一直读到低，则把速度置零*/
+        if(g_StructExtiFlag.bits.SpeedCalTimeoutFlag == 1)
+        {
+            SpeedCalTimeoutCount++;
+            if(SpeedCalTimeoutCount == 300)
+            {
+                g_BCM1SendVal.SpeedVal = 0x00;
+            }
+        }
+        else
+        {
+            SpeedCalTimeoutCount = 0;
+        }
 #if 0
 		/*Angle Sensor A count*/
 		if(g_StructExtiFlag.bits.ExtiAngSensorAStartFlag == 1)
@@ -268,7 +298,7 @@ u8 TIM6PluseFunc(void)
 //PWM输出初始化
 //arr：自动重装值
 //psc：时钟预分频数
-static void TorqueT1_Init(u16 arr,u16 psc)
+static void AngleP_Init(u16 arr,u16 psc)
 {  
 	GPIO_InitTypeDef GPIO_InitStructure;
 	TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
@@ -284,7 +314,7 @@ static void TorqueT1_Init(u16 arr,u16 psc)
    //设置该引脚为复用输出功能,输出TIM3 CH2的PWM脉冲波形
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6 ; //TIM_CH2
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;  //复用推挽输出
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
 	GPIO_Init(GPIOC, &GPIO_InitStructure);
 	//GPIO_WriteBit(GPIOA, GPIO_Pin_7,Bit_SET); // PA7上拉	
 
@@ -292,18 +322,7 @@ static void TorqueT1_Init(u16 arr,u16 psc)
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7 ; //TIM_CH2
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPD;  //输入
 	GPIO_Init(GPIOC, &GPIO_InitStructure);
-#if 0
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8 ; //TIM_CH3
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;  //复用推挽输出
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_Init(GPIOC, &GPIO_InitStructure);
-	//GPIO_WriteBit(GPIOA, GPIO_Pin_7,Bit_SET); // PA7上拉	
 
-	
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9 ; //TIM_CH4
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;  //输入//这里设置成浮空输入，是因为在板子上有上拉电阻
-	GPIO_Init(GPIOC, &GPIO_InitStructure);
-#endif
 	TIM_TimeBaseStructure.TIM_Period = arr; //设置在下一个更新事件装入活动的自动重装载寄存器周期的值	 
 	TIM_TimeBaseStructure.TIM_Prescaler =psc; //设置用来作为TIMx时钟频率除数的预分频值  不分频
 	TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1; //设置时钟分割:TDTS = Tck_tim
@@ -323,39 +342,15 @@ static void TorqueT1_Init(u16 arr,u16 psc)
 	TIM3_ICInitStructure.TIM_Channel = TIM_Channel_2; //CC1S=01 	选择输入端 IC1映射到TI1上
 	TIM3_ICInitStructure.TIM_ICPolarity = TIM_ICPolarity_Rising;	//上升沿捕获
 	TIM3_ICInitStructure.TIM_ICSelection = TIM_ICSelection_DirectTI; //映射到TI1上
-#if 1
+
+    #if 0
 	TIM3_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV2;	  //配置输入分频，不分频 
 	TIM3_ICInitStructure.TIM_ICFilter = 0x09;	  //IC1F=0000 配置输入滤波器 不滤波
-#else
-	TIM3_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV1;	  //配置输入分频，不分频 
-	TIM3_ICInitStructure.TIM_ICFilter = 0;	  //IC1F=0000 配置输入滤波器 不滤波
-#endif
-	TIM_ICInit(TIM3, &TIM3_ICInitStructure);
-#if 0
-	//CH3	PWM输出
-	TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM2; //选择定时器模式:TIM脉冲宽度调制模式2
-	TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable; //比较输出使能
-	TIM_OCInitStructure.TIM_Pulse = 0; //设置待装入捕获比较寄存器的脉冲值
-	TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_Low; //输出极性:TIM输出比较极性低
-
-	TIM_OC3Init(TIM3, &TIM_OCInitStructure);  //根据TIM_OCInitStruct中指定的参数初始化外设TIMx
-	TIM_OC3PreloadConfig(TIM3, TIM_OCPreload_Enable);  //使能TIMx在CCR2上的预装载寄存器
-
-	//CH4 输入捕获
-	TIM3_ICInitStructure.TIM_Channel = TIM_Channel_4; //CC1S=01 	选择输入端 IC1映射到TI1上
-	TIM3_ICInitStructure.TIM_ICPolarity = TIM_ICPolarity_Rising;	//上升沿捕获
-	TIM3_ICInitStructure.TIM_ICSelection = TIM_ICSelection_DirectTI; //映射到TI1上
-	#if 0
-	TIM3_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV1;	  //配置输入分频，不分频 
-	TIM3_ICInitStructure.TIM_ICFilter = 0x00;	  //IC1F=0000 配置输入滤波器 不滤波
     #else
 	TIM3_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV1;	  //配置输入分频，不分频 
-	TIM3_ICInitStructure.TIM_ICFilter = 0x09;	  //IC1F=0000 配置输入滤波器 不滤波
+	TIM3_ICInitStructure.TIM_ICFilter = 0x00;	  //IC1F=0000 配置输入滤波器 不滤波
     #endif
 	TIM_ICInit(TIM3, &TIM3_ICInitStructure);
-
-	TIM_ARRPreloadConfig(TIM3, ENABLE); //使能TIMx在ARR上的预装载寄存器
-#endif
 	//中断分组初始化
 	NVIC_InitStructure.NVIC_IRQChannel = TIM3_IRQn;  //TIM4中断
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;  //先占优先级1级
@@ -363,16 +358,12 @@ static void TorqueT1_Init(u16 arr,u16 psc)
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE; //IRQ通道被使能
 	NVIC_Init(&NVIC_InitStructure);   //根据NVIC_InitStruct中指定的参数初始化外设NVIC寄存器
 
-	TIM_ITConfig(TIM3,  TIM_IT_CC2/* | TIM_IT_CC4*/,
-			ENABLE);   //不允许更新中断，允许CC2IE捕获中断
-	
- 
+	TIM_ITConfig(TIM3,  TIM_IT_CC2,ENABLE);   //不允许更新中断，允许CC2IE捕获中断
 	TIM_Cmd(TIM3, ENABLE);  //使能TIMx外设
  
 
 }
 
-u8 PWM3OUT2Flag = 0;
 void TIM3_IRQHandler(void)   //TIM3中断
 {
 //    static u8 i = 0;
@@ -389,48 +380,14 @@ void TIM3_IRQHandler(void)   //TIM3中断
 				TIM3CH2_CAPTURE_DOWNVAL = TIM_GetCapture2(TIM3);//记录下此时的定时器计数值
 				if (TIM3CH2_CAPTURE_DOWNVAL < TIM3CH2_CAPTURE_UPVAL)
 				{
-					tim3_T2 = ARR_2KHz;
+					tim3_T2 = ARR_1KHz;
 				}
 				else
 					tim3_T2 = 0;
 				
 				tem3pup2 = TIM3CH2_CAPTURE_DOWNVAL - TIM3CH2_CAPTURE_UPVAL
 						+ tim3_T2;		//得到总的高电平的时间
-                #if 0
-				if(i == 0 )
-                {
-                    MaxValue = tem3pup2;
-                    MinVaule = tem3pup2;
-                }            
-                else
-                {
-                    if(tem3pup2 > MaxValue)
-                    {
-                        PWM3OUT2 += MaxValue;
-                        MaxValue = tem3pup2;
-                    }
-                    else if(tem3pup2 < MinVaule)
-                    {
-                        PWM3OUT2 += MinVaule;
-                        MinVaule = tem3pup2;
-                    }
-                    else
-                    {
-                        PWM3OUT2 += tem3pup2;
-                    }
-                    
-                    if(i == 5)
-                    {
-                        PWM3OUT2 = PWM3OUT2 / 5;
-                        i = 0;
-                        PWM3OUT2Flag = 1;
-                    }            
-                }
-                
-                i++;             
-                #else
-                PWM3OUT2 = tem3pup2;
-                #endif
+				PWM3OUT2 = tem3pup2;
 				TIM3CH2_CAPTURE_STA = 0;		//捕获标志位清零
 				TIM_OC2PolarityConfig(TIM3, TIM_ICPolarity_Rising); //设置为上升沿捕获				  
 			}
@@ -444,45 +401,13 @@ void TIM3_IRQHandler(void)   //TIM3中断
 		}
 	}	
        }
-#if 0
-	if ((TIM3CH4_CAPTURE_STA & 0X80) == 0)		//还未成功捕获
-	{
-		if (TIM_GetITStatus(TIM3, TIM_IT_CC4) != RESET)		//捕获2发生捕获事件
-		{
-			TIM_ClearITPendingBit(TIM3, TIM_IT_CC4);		//清除中断标志位
-			if (TIM3CH4_CAPTURE_STA & 0X40)		//捕获到一个下降沿
-			{
-				TIM3CH4_CAPTURE_DOWNVAL = TIM_GetCapture4(TIM3);//记录下此时的定时器计数值
-				if (TIM3CH4_CAPTURE_DOWNVAL < TIM3CH4_CAPTURE_UPVAL)
-				{
-					tim3_T4 = ARR_2KHz;
-				}
-				else
-					tim3_T4 = 0;
-				
-				tem3pup4 = TIM3CH4_CAPTURE_DOWNVAL - TIM3CH4_CAPTURE_UPVAL
-						+ tim3_T4;		//得到总的高电平的时间
-				PWM3OUT4 = tem3pup4;		//总的高电平的时间
-				TIM3CH4_CAPTURE_STA = 0;		//捕获标志位清零
-				TIM_OC4PolarityConfig(TIM3, TIM_ICPolarity_Rising); //设置为上升沿捕获				  
-			}
-			else //发生捕获时间但不是下降沿，第一次捕获到上升沿，记录此时的定时器计数值
-			{
-				TIM3CH4_CAPTURE_UPVAL = TIM_GetCapture4(TIM3);		//获取上升沿数据
-                //PWM3OUT4 = 0;
-				TIM3CH4_CAPTURE_STA |= 0X40;		//标记已捕获到上升沿
-				TIM_OC4PolarityConfig(TIM3, TIM_ICPolarity_Falling);//设置为下降沿捕获
-			}
-		}
-	}
-#endif
 
 }
 
 
 //TIM4
 
-static void AngleS_Init(u16 arr,u16 psc)
+static void TorqueT1_Init(u16 arr,u16 psc)
 {  
 	GPIO_InitTypeDef GPIO_InitStructure;
 	TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
@@ -497,7 +422,7 @@ static void AngleS_Init(u16 arr,u16 psc)
    //设置该引脚为复用输出功能,输出TIM3 CH2的PWM脉冲波形
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6 ; //TIM_CH2
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;  //复用推挽输出
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
 	GPIO_Init(GPIOB, &GPIO_InitStructure);
 	//GPIO_WriteBit(GPIOA, GPIO_Pin_7,Bit_SET); // PA7上拉	
 
@@ -525,7 +450,7 @@ static void AngleS_Init(u16 arr,u16 psc)
 	TIM4_ICInitStructure.TIM_Channel = TIM_Channel_2; //CC1S=01 	选择输入端 IC1映射到TI1上
 	TIM4_ICInitStructure.TIM_ICPolarity = TIM_ICPolarity_Rising;	//上升沿捕获
 	TIM4_ICInitStructure.TIM_ICSelection = TIM_ICSelection_DirectTI; //映射到TI1上
-	#if 0
+	#if 1
 	TIM4_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV1;	  //配置输入分频，不分频 
 	TIM4_ICInitStructure.TIM_ICFilter = 0x00;	  //IC1F=0000 配置输入滤波器 不滤波
     #else
@@ -538,7 +463,7 @@ static void AngleS_Init(u16 arr,u16 psc)
 	//中断分组初始化
 	NVIC_InitStructure.NVIC_IRQChannel = TIM4_IRQn;  //TIM4中断
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;  //先占优先级1级
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;  //从优先级0级
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;  //从优先级0级
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE; //IRQ通道被使能
 	NVIC_Init(&NVIC_InitStructure);   //根据NVIC_InitStruct中指定的参数初始化外设NVIC寄存器
 
@@ -564,7 +489,7 @@ void TIM4_IRQHandler(void)   //TIM4中断
 				TIM4CH2_CAPTURE_DOWNVAL = TIM_GetCapture2(TIM4);//记录下此时的定时器计数值
 				if (TIM4CH2_CAPTURE_DOWNVAL < TIM4CH2_CAPTURE_UPVAL)
 				{
-					tim4_T2 = ARR_200Hz;
+					tim4_T2 = ARR_2KHz;
 				}
 				else
 					tim4_T2 = 0;
@@ -596,7 +521,7 @@ void TIM4_IRQHandler(void)   //TIM4中断
 //PWM输出初始化
 //arr：自动重装值
 //psc：时钟预分频数
-static void TorqueT2_Init(u16 arr,u16 psc)
+static void AngleS_Init(u16 arr,u16 psc)
 {  
 	GPIO_InitTypeDef GPIO_InitStructure;
 	TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
@@ -610,7 +535,7 @@ static void TorqueT2_Init(u16 arr,u16 psc)
    //设置该引脚为复用输出功能,输出TIM3 CH2的PWM脉冲波形
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 ; //TIM_CH2
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;  //复用推挽输出
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
 	GPIO_Init(GPIOA, &GPIO_InitStructure);
 	//GPIO_WriteBit(GPIOA, GPIO_Pin_7,Bit_SET); // PA7上拉	
 
@@ -652,8 +577,15 @@ static void TorqueT2_Init(u16 arr,u16 psc)
 	TIM5_ICInitStructure.TIM_Channel = TIM_Channel_2; //CC1S=01 	选择输入端 IC1映射到TI1上
 	TIM5_ICInitStructure.TIM_ICPolarity = TIM_ICPolarity_Rising;	//上升沿捕获
 	TIM5_ICInitStructure.TIM_ICSelection = TIM_ICSelection_DirectTI; //映射到TI1上
+
+    #if 0
 	TIM5_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV2;	  //配置输入分频，不分频 
 	TIM5_ICInitStructure.TIM_ICFilter = 0x09;	  //IC1F=0000 配置输入滤波器 不滤波
+    #else
+	TIM5_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV1;	  //配置输入分频，不分频 
+	TIM5_ICInitStructure.TIM_ICFilter = 0x00;	  //IC1F=0000 配置输入滤波器 不滤波
+
+    #endif
 	TIM_ICInit(TIM5, &TIM5_ICInitStructure);
 #if 0
 		//CH3	PWM输出
@@ -703,7 +635,7 @@ void TIM5_IRQHandler(void)   //TIM3中断
 				TIM5CH2_CAPTURE_DOWNVAL = TIM_GetCapture2(TIM5);//记录下此时的定时器计数值
 				if (TIM5CH2_CAPTURE_DOWNVAL < TIM5CH2_CAPTURE_UPVAL)
 				{
-					tim5_T2 = ARR_2140Hz;
+					tim5_T2 = ARR_200Hz;
 				}
 				else
 					tim5_T2 = 0;
@@ -899,34 +831,19 @@ void printfTIM5(void)
 
 //TIM6
 #if 1
-static void AngleP_Init(u16 arr,u16 psc)
+static void TorqueT2_Init(u16 arr,u16 psc)
 {  
 	GPIO_InitTypeDef GPIO_InitStructure;
 	TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
 	TIM_OCInitTypeDef  TIM_OCInitStructure;
 	TIM_ICInitTypeDef  TIM_ICInitStructure;	
 	NVIC_InitTypeDef NVIC_InitStructure;
-#if 0
-//	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, ENABLE);
-// 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB , ENABLE);  //使能GPIO外设和AFIO复用功能模块时钟使能
-   GPIO_PinRemapConfig(GPIO_PartialRemap1_TIM2, ENABLE); //Timer3完全重映射  TIM3_CH1->PC6 CH2->PC7 CH3->PC8 CH4->PC9																			//用于TIM3的CH2输出的PWM通过该LED显示
-   GPIO_InitStructure.GPIO_Pin = GPIO_Pin_15 ; //TIM_CH2
-   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;	//复用推挽输出
-   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-   GPIO_Init(GPIOA, &GPIO_InitStructure);
-   //GPIO_WriteBit(GPIOA, GPIO_Pin_7,Bit_SET); // PA7上拉    
-   
-   
-   GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3 ; //TIM_CH2
-   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPD;  //输入
-   GPIO_Init(GPIOB, &GPIO_InitStructure);
-#endif   
 	
  #if 1
    //设置该引脚为复用输出功能,输出TIM3 CH2的PWM脉冲波形
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2 ; //TIM_CH2
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;  //复用推挽输出
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
 	GPIO_Init(GPIOA, &GPIO_InitStructure);
 	//GPIO_WriteBit(GPIOA, GPIO_Pin_7,Bit_SET); // PA7上拉	
 
@@ -940,24 +857,6 @@ static void AngleP_Init(u16 arr,u16 psc)
 	TIM_TimeBaseStructure.TIM_ClockDivision = 0; //设置时钟分割:TDTS = Tck_tim
 	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;  //TIM向上计数模式
 	TIM_TimeBaseInit(TIM2, &TIM_TimeBaseStructure); //根据TIM_TimeBaseInitStruct中指定的参数初始化TIMx的时间基数单位
-#if 0
-	//CH1	PWM输出
-	TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM2; //选择定时器模式:TIM脉冲宽度调制模式2
-	TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable; //比较输出使能
-	TIM_OCInitStructure.TIM_Pulse = 0; //设置待装入捕获比较寄存器的脉冲值
-	TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_Low; //输出极性:TIM输出比较极性低
-
-	TIM_OC1Init(TIM2, &TIM_OCInitStructure);  //根据TIM_OCInitStruct中指定的参数初始化外设TIMx
-	TIM_OC1PreloadConfig(TIM2, TIM_OCPreload_Enable);  //使能TIMx在CCR2上的预装载寄存器
-
-	//CH2 输入捕获
-	TIM_ICInitStructure.TIM_Channel = TIM_Channel_2; //CC1S=01 	选择输入端 IC1映射到TI1上
-	TIM_ICInitStructure.TIM_ICPolarity = TIM_ICPolarity_Rising;	//上升沿捕获
-	TIM_ICInitStructure.TIM_ICSelection = TIM_ICSelection_DirectTI; //映射到TI1上
-	TIM_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV1;	  //配置输入分频，不分频 
-	TIM_ICInitStructure.TIM_ICFilter = 0x00;	  //IC1F=0000 配置输入滤波器 不滤波
-	TIM_ICInit(TIM2, &TIM_ICInitStructure);
-#endif
 	
 	//CH3	PWM输出
 	TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM2; //选择定时器模式:TIM脉冲宽度调制模式2
@@ -972,98 +871,59 @@ static void AngleP_Init(u16 arr,u16 psc)
 	TIM_ICInitStructure.TIM_Channel = TIM_Channel_4; //CC1S=01 	选择输入端 IC1映射到TI1上
 	TIM_ICInitStructure.TIM_ICPolarity = TIM_ICPolarity_Rising;	//上升沿捕获
 	TIM_ICInitStructure.TIM_ICSelection = TIM_ICSelection_DirectTI; //映射到TI1上
-#if 0
-	TIM_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV1;	  //配置输入分频，不分频 
-	TIM_ICInitStructure.TIM_ICFilter = 0x00;	  //IC1F=0000 配置输入滤波器 不滤波
-#else
+
+    #if 0
 	TIM_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV4;	  //配置输入分频，不分频 
 	TIM_ICInitStructure.TIM_ICFilter = 0x0F;	  //IC1F=0000 配置输入滤波器 不滤波
-#endif
+    #else
+	TIM_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV1;	  //配置输入分频，不分频 
+	TIM_ICInitStructure.TIM_ICFilter = 0x00;	  //IC1F=0000 配置输入滤波器 不滤波
+    #endif
 	TIM_ICInit(TIM2, &TIM_ICInitStructure);
 
 	TIM_ARRPreloadConfig(TIM2, ENABLE); //使能TIMx在ARR上的预装载寄存器
 	//中断分组初始化
 	NVIC_InitStructure.NVIC_IRQChannel = TIM2_IRQn;  //TIM4中断
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;  //先占优先级1级
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;  //从优先级0级
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;  //从优先级0级
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE; //IRQ通道被使能
 	NVIC_Init(&NVIC_InitStructure);   //根据NVIC_InitStruct中指定的参数初始化外设NVIC寄存器
 
-	TIM_ITConfig(TIM2, /*TIM_IT_CC2 | */TIM_IT_CC4 ,
-			ENABLE);   //不允许更新中断，允许CC2IE捕获中断
-	
- 
+	TIM_ITConfig(TIM2, TIM_IT_CC4 ,ENABLE);   //不允许更新中断，允许CC2IE捕获中断	 
 	TIM_Cmd(TIM2, ENABLE);  //使能TIMx外设
- 
-
 }
 void TIM2_IRQHandler(void)   //TIM4中断
 {
-#if 0
-	if ((TIM2CH2_CAPTURE_STA & 0X80) == 0)		//还未成功捕获
-	{
-		if (TIM_GetITStatus(TIM2, TIM_IT_CC2) != RESET)		//捕获2发生捕获事件
-		{
-			TIM_ClearITPendingBit(TIM2, TIM_IT_CC2);		//清除中断标志位
-			if (TIM2CH2_CAPTURE_STA & 0X40)		//捕获到一个下降沿
-			{
-				TIM2CH2_CAPTURE_DOWNVAL = TIM_GetCapture2(TIM2);//记录下此时的定时器计数值
-				if (TIM2CH2_CAPTURE_DOWNVAL < TIM2CH2_CAPTURE_UPVAL)
-				{
-					tim2_T2 = ARR_1KHz;
-				}
-				else
-					tim2_T2 = 0;
-				
-				tem2pup2 = TIM2CH2_CAPTURE_DOWNVAL - TIM2CH2_CAPTURE_UPVAL
-						+ tim2_T2;		//得到总的高电平的时间
-				PWM2OUT2 = tem2pup2;		//总的高电平的时间
-				TIM2CH2_CAPTURE_STA = 0;		//捕获标志位清零
-				TIM_OC2PolarityConfig(TIM2, TIM_ICPolarity_Rising); //设置为上升沿捕获				  
-			}
-			else //发生捕获时间但不是下降沿，第一次捕获到上升沿，记录此时的定时器计数值
-			{
-				TIM2CH2_CAPTURE_UPVAL = TIM_GetCapture2(TIM2);		//获取上升沿数据
-                //PWM2OUT2 = 0;
-				TIM2CH2_CAPTURE_STA |= 0X40;		//标记已捕获到上升沿
-				TIM_OC2PolarityConfig(TIM2, TIM_ICPolarity_Falling);//设置为下降沿捕获
-			}
-		}
-	}
-	#endif
-if ((TIM2CH4_CAPTURE_STA & 0X80) == 0)		//还未成功捕获
-{
-	if (TIM_GetITStatus(TIM2, TIM_IT_CC4) != RESET) 	//捕获2发生捕获事件
-	{
-		TIM_ClearITPendingBit(TIM2, TIM_IT_CC4);		//清除中断标志位
-		if (TIM2CH4_CAPTURE_STA & 0X40) 	//捕获到一个下降沿
-		{
-			TIM2CH4_CAPTURE_DOWNVAL = TIM_GetCapture4(TIM2);//记录下此时的定时器计数值
-			if (TIM2CH4_CAPTURE_DOWNVAL < TIM2CH4_CAPTURE_UPVAL)
-			{
-				tim2_T4 = ARR_2KHz;
-			}
-			else
-				tim2_T4 = 0;
-			
-			tem2pup4 = TIM2CH4_CAPTURE_DOWNVAL - TIM2CH4_CAPTURE_UPVAL
-					+ tim2_T4;		//得到总的高电平的时间
-			PWM2OUT4 = tem2pup4;		//总的高电平的时间
-			TIM2CH4_CAPTURE_STA = 0;		//捕获标志位清零
-			TIM_OC4PolarityConfig(TIM2, TIM_ICPolarity_Rising); //设置为上升沿捕获				  
-		}
-		else //发生捕获时间但不是下降沿，第一次捕获到上升沿，记录此时的定时器计数值
-		{
-			TIM2CH4_CAPTURE_UPVAL = TIM_GetCapture4(TIM2);		//获取上升沿数据
-			//PWM2OUT4 = 0;
-			TIM2CH4_CAPTURE_STA |= 0X40;		//标记已捕获到上升沿
-			TIM_OC4PolarityConfig(TIM2, TIM_ICPolarity_Falling);//设置为下降沿捕获
-		}
-	}
-}
-
-
-
+    if ((TIM2CH4_CAPTURE_STA & 0X80) == 0)		//还未成功捕获
+    {
+        if (TIM_GetITStatus(TIM2, TIM_IT_CC4) != RESET) 	//捕获2发生捕获事件
+        {
+        	TIM_ClearITPendingBit(TIM2, TIM_IT_CC4);		//清除中断标志位
+        	if (TIM2CH4_CAPTURE_STA & 0X40) 	//捕获到一个下降沿
+        	{
+        		TIM2CH4_CAPTURE_DOWNVAL = TIM_GetCapture4(TIM2);//记录下此时的定时器计数值
+        		if (TIM2CH4_CAPTURE_DOWNVAL < TIM2CH4_CAPTURE_UPVAL)
+        		{
+                    tim2_T4 = ARR_2140Hz;
+        		}
+        		else
+        			tim2_T4 = 0;
+        		
+        		tem2pup4 = TIM2CH4_CAPTURE_DOWNVAL - TIM2CH4_CAPTURE_UPVAL
+        				+ tim2_T4;		//得到总的高电平的时间
+        		PWM2OUT4 = tem2pup4;		//总的高电平的时间
+        		TIM2CH4_CAPTURE_STA = 0;		//捕获标志位清零
+        		TIM_OC4PolarityConfig(TIM2, TIM_ICPolarity_Rising); //设置为上升沿捕获				  
+        	}
+        	else //发生捕获时间但不是下降沿，第一次捕获到上升沿，记录此时的定时器计数值
+        	{
+        		TIM2CH4_CAPTURE_UPVAL = TIM_GetCapture4(TIM2);		//获取上升沿数据
+        		//PWM2OUT4 = 0;
+        		TIM2CH4_CAPTURE_STA |= 0X40;		//标记已捕获到上升沿
+        		TIM_OC4PolarityConfig(TIM2, TIM_ICPolarity_Falling);//设置为下降沿捕获
+        	}
+        }
+    }
 }
 #endif
 #endif
@@ -1370,7 +1230,6 @@ void TIM7_IRQHandler(void)	 //TIM2中断
 
 void TIM_INIT(void)
 {
-
 	TIM6_Init(999, 71);// 1kHz
 	//TIM7_Init(359,1);
 	
@@ -1380,31 +1239,18 @@ void TIM_INIT(void)
 	//TIM_SetCompare1(TIM3,500);
 	#if STM32_BOARD
 	
-		//TIM1_EncoderInit(EncoderArr, EncoderPSC);
-	
-		AngleP_Init(ARR_1KHz, PSC_1KHz);	//不分频。PWM频率=72 000 000/(1+1)(35999+1)=1Khz
+           // TIM1_EncoderInit(EncoderArr, EncoderPSC);
+    
+    		AngleP_Init(ARR_1KHz, PSC_1KHz);	//不分频。PWM频率=72 000 000/(1+1)(35999+1)=1Khz
 
-		TorqueT1_Init(ARR_2KHz, PSC_2KHz); 		//不分频。PWM频率=72 000 000/(0+1)(35999+1)=2Khz
-        //TorqueT1_Init(ARR_200Hz, PSC_200Hz);
-        TorqueT2_Init(ARR_2140Hz,PSC_2140Hz);
-        //TorqueT2_Init(ARR_2KHz,PSC_2KHz);
+    		AngleS_Init(ARR_200Hz, PSC_200Hz); 	 //不分频。PWM频率=72 000 000/(35+1)(9999+1)=200hz
 
-		//	TorqueT1_Init(4999,71);  //不分频。PWM频率=72000000/72=1MHz
-		//	TIM4_Init(0XFFFF,72-1); //以1Mhz的频率计数 
-		//	TIM_SetCompare1(TIM3,10000);		   
-		 //   TIM_SetCompare2(TIM3,0x8000); 	   
-		//	TIM_SetCompare3(TIM3,0xA000);		   
-		//	TIM_SetCompare4(TIM3,0xF000);		   
-		AngleS_Init(ARR_200Hz, PSC_200Hz); 	 //不分频。PWM频率=72 000 000/(35+1)(9999+1)=200hz
-			//TIM_SetCompare1(TIM4,20000);		
-		//TorqueT2_Init(ARR_2KHz, PSC_2KHz); 	 //不分频。PWM频率=72 000 000/(1+1)(35999+1)=1Khz
-			//TIM_SetCompare1(TIM5,5000); 		
-			//TIM_SetCompare3(TIM5,30000);
-			
-            //TIM_SetCompare1(TIM3, 18000); 
-            //TIM_SetCompare3(TIM3, 18000); 
-            
-           // TIM_SetCompare1(TIM3, 5000); 
-           // TIM_SetCompare3(TIM3, 5000); 
+    		TorqueT1_Init(ARR_2KHz, PSC_2KHz); 		//不分频。PWM频率=72 000 000/(0+1)(35999+1)=2Khz
+
+            TorqueT2_Init(ARR_2140Hz,PSC_2140Hz);
+            //TIM_SetCompare3(TIM2,  17022); 
+           TIM_SetCompare3(TIM2,  16822); 
+            TIM_SetCompare1(TIM4, 18000);    
+
 	#endif
 }
