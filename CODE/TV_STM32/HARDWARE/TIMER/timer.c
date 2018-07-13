@@ -138,6 +138,7 @@ static u8 CANSendCount = 0;
 static u8 DACSendCount = 0;
 static u16 SpeedCalTimeoutCount = 0;
 static u16 T1T2Count = 0;
+static u8 CANRecvErrorCount = 0;
 void TIM6_IRQHandler(void)	 //TIM2中断
 {
 
@@ -252,7 +253,24 @@ void TIM6_IRQHandler(void)	 //TIM2中断
 				CANSendCount = 0;
 			}
 		}
-		
+        #if 0
+        if(g_StructGlobalFlag.bits.bCANConnectionError == 1)
+        {
+            CANRecvErrorCount++;
+            if(CANRecvErrorCount == 10)
+            {
+                CANRecvErrorCount = 0;
+                //memset(CANRecvDataBuf,0,sizeof(CANRecvDataBuf[0])*3);
+                g_VCU2RecvVal.Accelerator1HIGH = 0;
+                g_VCU2RecvVal.Accelerator1LOW = 0;
+            }
+        }
+        else
+        {
+            CANRecvErrorCount = 0;
+        }
+        #endif
+        
 		/*LED count*/
 		LEDCount++;
 		if(LEDCount == 499)
@@ -1239,7 +1257,7 @@ void TIM_INIT(void)
 	//TIM_SetCompare1(TIM3,500);
 	#if STM32_BOARD
 	
-           // TIM1_EncoderInit(EncoderArr, EncoderPSC);
+            TIM1_EncoderInit(EncoderArr, EncoderPSC);
     
     		AngleP_Init(ARR_1KHz, PSC_1KHz);	//不分频。PWM频率=72 000 000/(1+1)(35999+1)=1Khz
 

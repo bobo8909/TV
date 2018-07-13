@@ -26,7 +26,7 @@ int main(void)
 		DAC_task();
 		SpeedCal_task();
 		//AdditionalAngleSensor_task();
-		//Encoder_task();
+		Encoder_task();
 	#endif
 
 		#if JSDG_BOARD

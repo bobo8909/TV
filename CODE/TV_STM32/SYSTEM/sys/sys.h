@@ -62,7 +62,7 @@ typedef union
 			u8 AngSensorBCalFlag : 1;
 			u8 StoplightFlag : 1;
 			u8 DrivingModeSwitchFlag : 1;
-			u8 b7 : 1;
+			u8 bCANConnectionError : 1;
 		}bits;
 }STRUCT_GLOBAL_FLAG;
 extern STRUCT_GLOBAL_FLAG g_StructGlobalFlag;
@@ -142,6 +142,5 @@ void MSR_MSP(u32 addr);	//…Ë÷√∂—’ªµÿ÷∑
 #endif
 
 
-void System_init(void)
-;
+void System_init(void);
 

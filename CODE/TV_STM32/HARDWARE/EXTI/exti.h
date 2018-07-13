@@ -2,7 +2,7 @@
 #define __EXIT_H	 
 #include "sys.h"
 
-void EXTI11_Init(void);//外部中断初始化		 					    
+void SpeedEXTI_Init(void);//外部中断初始化		 					    
 //void EXTI1_Init(void);//外部中断初始化		 					    
 //void EXTI2_Init(void);//外部中断初始化		 					    
 

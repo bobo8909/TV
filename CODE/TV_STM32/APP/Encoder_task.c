@@ -19,7 +19,7 @@ void Encoder_task(void)
 		/*定时器设置的是上升沿，下降沿都会计数，因此实际的脉冲数需要除以4,
 		**由于是100ms发送一次，计算时需要乘以10变成1秒进行计算
 		*/
-		RotationalSpeed = DEGREEMAX * 10 * (n_Counter - backupCounter) / 4 / MAXPPR;
+		RotationalSpeed =( (DEGREEMAX * 10 * (n_Counter - backupCounter) / 4 / MAXPPR)+360)*100/36;
 
 
 		g_BCM3SendVal.FrontSpeedHigh = (RotationalSpeed >> 8) & 0xFF;

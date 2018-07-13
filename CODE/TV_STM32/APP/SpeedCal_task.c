@@ -1,6 +1,6 @@
 #include "SpeedCal_task.h"
 
-#define SPEEDREAD PEin(11)
+#define SPEEDREAD PGin(8)
 
 #define PI 3.1415f
 
@@ -29,7 +29,7 @@ static void SpeedCal(void)
 
 
 		g_BCM1SendVal.SpeedVal = SpeedCANVal;
-		printf("g_BCM1SendVal.SpeedVal = %02f\r\n",SpeedV);
+		//printf("g_BCM1SendVal.SpeedVal = %02f\r\n",SpeedV);
 
 		//g_BCM1SendVal.SpeedVal = 0x22;
 		//g_BCM2SendVal.AngleSensorSignalPHigh = 0x11;

@@ -73,7 +73,7 @@ void System_init(void)
 		
 		DAC1_Init();
 		
-		EXTI11_Init();
+		SpeedEXTI_Init();
 
 		//EXTI1_Init();
 		

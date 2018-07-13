@@ -6,7 +6,7 @@ void ADC_task(void)
 
 {
 	u16 ADCbuf = 0;
-	u16 printfad = 0;
+	//u16 printfad = 0;
 
 	/*AD采样的是12bit，需要转换成14bit*/
 #if STM32_EVALUATION

@@ -233,8 +233,8 @@ void AngleSensor_task(void)
 		
 		//printf("PWMVal0 = %d\r\n", PWMVal[0]);
 		//printf("PWMVal1 = %d\r\n", PWMVal[1]);
-		printf("PWMVal2 = %d\r\n", PWMVal[2]);
-		printf("PWMVal3 = %d\r\n", PWMVal[3]);
+		//printf("PWMVal2 = %d\r\n", PWMVal[2]);
+		//printf("PWMVal3 = %d\r\n", PWMVal[3]);
 	}
     #endif
 #endif

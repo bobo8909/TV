@@ -2,22 +2,22 @@
 
 
 //外部中断11初始化
-void EXTI11_Init(void)
+void SpeedEXTI_Init(void)
 {
  
    	EXTI_InitTypeDef EXTI_InitStructure;
 	NVIC_InitTypeDef NVIC_InitStructure;
 
    //GPIOE.0	  中断线以及中断初始化配置 上升沿触发   //车速脉冲数读取
-  	GPIO_EXTILineConfig(GPIO_PortSourceGPIOE, GPIO_PinSource11);
+  	GPIO_EXTILineConfig(GPIO_PortSourceGPIOG, GPIO_PinSource8);
    
-  	EXTI_InitStructure.EXTI_Line=EXTI_Line11;
+  	EXTI_InitStructure.EXTI_Line=EXTI_Line8;
   	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;	
   	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising;
 	EXTI_InitStructure.EXTI_LineCmd = ENABLE;
 	EXTI_Init(&EXTI_InitStructure);	  	//根据EXTI_InitStruct中指定的参数初始化外设EXTI寄存器
 
-  	NVIC_InitStructure.NVIC_IRQChannel = EXTI15_10_IRQn;			//所在的外部中断通道
+  	NVIC_InitStructure.NVIC_IRQChannel = EXTI9_5_IRQn;			//所在的外部中断通道
   	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x02;	//抢占优先级2， 
   	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x02;					//子优先级3
   	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;								//使能外部中断通道
@@ -72,9 +72,9 @@ void EXTI2_Init(void)
 //外部中断0服务程序 
 u16 SpeedCount = 0;
 static u16 PluseCount = 0;
-void EXTI15_10_IRQHandler(void)
+void EXTI9_5_IRQHandler(void)
 {
-	if (EXTI_GetITStatus(EXTI_Line11) != RESET)//判断某个线上的中断是否发生 
+	if (EXTI_GetITStatus(EXTI_Line8) != RESET)//判断某个线上的中断是否发生 
 	{
 		g_StructExtiFlag.bits.SpeedStartFlag = 1;
 		if(g_TIMFlag.bits.SpeedFlag == 1)
@@ -85,7 +85,7 @@ void EXTI15_10_IRQHandler(void)
 			 g_StructExtiFlag.bits.SpeedCalFlag = 1;
 		}
 		PluseCount++;
-		EXTI_ClearITPendingBit(EXTI_Line11);	//清除 LINE 上的中断标志位
+		EXTI_ClearITPendingBit(EXTI_Line8);	//清除 LINE 上的中断标志位
 	}	  
 }
 

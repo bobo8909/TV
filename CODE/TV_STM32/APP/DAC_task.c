@@ -37,8 +37,9 @@ void DAC_task(void)
 		{
 			DACbuf[0] = (((u16)g_BCM1SendVal.Accelerator1SignalHigh << 8) | g_BCM1SendVal.Accelerator1SignalLow) >> 2;
 		}
-		printf("DACBUF:%d\r\n",DACbuf[0]);
+		//printf("DACBUF:%d\r\n",DACbuf[0]);
 		AcceleratorControl(DACbuf[0]);	
-		
+		//AcceleratorControl(4095);
+		//Dac1_Set_Vol(3200);
 	#endif	
 }

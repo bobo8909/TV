@@ -6,6 +6,8 @@
 #define OFF 0
 #define ON 1
 
+#define INPUT_ON 0
+#define INPUT_OFF 1
 #if 0
 typedef enum 
 {
