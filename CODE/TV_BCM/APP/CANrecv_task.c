@@ -147,7 +147,7 @@ void CANrecv_task(void)
 
 		CANRecvDataBuf[0].NewDataFlag = 0;		
 	}
-
+#if 0
 	if (CANRecvDataBuf[1].NewDataFlag == 1)
 	{
 	
@@ -157,7 +157,7 @@ void CANrecv_task(void)
 
         g_StructGlobalFlag.bits.bCANConnectionError = 0;
 	}
-
+#endif
 	if (CANRecvDataBuf[2].NewDataFlag == 1)
 	{
 	
@@ -204,14 +204,14 @@ void CANrecv_task(void)
 		
 		if(g_StructBCMStatus.DrivingMode == AUTOMATIC_DRIVING)
 		{
-			//if(g_EBS1RecvVal.MainCylinderBrakePressure >= 55)
-			//{
-			//	BRAKE_CONTROL = 0;
-			//}
-			//else
-			//{
-			//	BRAKE_CONTROL = 1;
-			//}
+			if(g_EBS1RecvVal.MainCylinderBrakePressure >= 55)
+			{
+				BRAKE_CONTROL = 0;
+			}
+			else
+			{
+				BRAKE_CONTROL = 1;
+			}
 		}
 	}
 #endif

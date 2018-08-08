@@ -59,7 +59,7 @@ typedef struct _VCU_5
 			u8 b_BeamLight : 1;
 			u8 b_TurnLeftLight : 1;
 			u8 b_TurnRightLight : 1;
-			u8 b5 : 1;
+			u8 b_Stoplight : 1;
 			u8 b6 : 1;
 			u8 b7 : 1;
 		}bits;

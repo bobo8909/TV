@@ -74,10 +74,6 @@ void System_init(void)
 		DAC1_Init();
 		
 		SpeedEXTI_Init();
-
-		//EXTI1_Init();
-		
-		//EXTI2_Init();
 		
 		IO_init();
 

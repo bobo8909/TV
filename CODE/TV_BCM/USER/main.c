@@ -11,7 +11,6 @@ int main(void)
     {
     	IWDG_Feed();  //Î¹¹·
     	
-		//GPIO_SetBits(GPIOF,GPIO_Pin_0|GPIO_Pin_1|GPIO_Pin_2|GPIO_Pin_3|GPIO_Pin_4|GPIO_Pin_5|GPIO_Pin_6|GPIO_Pin_7|GPIO_Pin_9|GPIO_Pin_10|GPIO_Pin_11);
 #if 1
 		Led_task();
 		

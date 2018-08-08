@@ -65,13 +65,13 @@ void CheckIo(void)
 		}
 	}
 	
-	if (g_StructBCMStatus.DrivingMode  == MANNED)
+	if (g_StructBCMStatus.DrivingMode == MANNED)
 	{
 		BRAKE_CONTROL = OFF;
 	}
 	else
 	{
-	#if 0
+	#if 1
 		if (READ_BRAKE_CONTROL == 0x00)
 		{
 			if (g_BCM1SendVal.SpeedVal == 0x00)
@@ -82,8 +82,8 @@ void CheckIo(void)
 			else
 			{
 				BRAKE_CONTROL = ON;
-				D_GEAR = ON;
-				R_GEAR = ON;
+				D_GEAR = OFF;
+				R_GEAR = OFF;
 				AcceleratorControl(OFF);
             }
 		}
@@ -199,7 +199,7 @@ void IOControl(void)
 	}
 
 	/*É²³µµÆ¿ØÖÆ*/
-	if(g_StructGlobalFlag.bits.StoplightFlag == 0x01)
+	if((g_StructGlobalFlag.bits.StoplightFlag == 0x01) || (g_VCU5RecvVal.LIGHTSTATUS.bits.b_Stoplight == 0x01))
 	{
 		STOPLIGHT = ON;
 	}

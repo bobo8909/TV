@@ -4,7 +4,7 @@
 #include "sys.h"
 #define STM32_EVALUATION 0
 
-#if STM32_EVALUATION
+#if 0
 #define KLAXON_SWITCH		PFout(0)// 喇叭继电器
 #define TURN_RIGHT_LIGHT	PFout(1)// 右转灯间歇继电器  
 #define TURN_LEFT_LIGHT		PFout(2)// 左转灯开关间歇继电器  

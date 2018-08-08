@@ -135,10 +135,11 @@ u16 AngSensorBMinus = 0;
 
 static u16 LEDCount = 0;
 static u8 CANSendCount = 0;
+static u8 CANSend20msCount = 0;
 static u8 DACSendCount = 0;
 static u16 SpeedCalTimeoutCount = 0;
 static u16 T1T2Count = 0;
-static u8 CANRecvErrorCount = 0;
+//static u8 CANRecvErrorCount = 0;
 void TIM6_IRQHandler(void)	 //TIM2ÖÐ¶Ï
 {
 
@@ -243,14 +244,25 @@ void TIM6_IRQHandler(void)	 //TIM2ÖÐ¶Ï
 		}
 #endif
 		/*can count*/
-		if(g_TIMFlag.bits.CANFlag == 0)
+		if(g_TIMFlag.bits.CAN100msFlag == 0)
 		{
 			CANSendCount++;
 			if(CANSendCount == 99)
 			{
-				g_TIMFlag.bits.CANFlag = 1;
+				g_TIMFlag.bits.CAN100msFlag = 1;
 				g_TIMFlag.bits.EncoderFlag = 1;
 				CANSendCount = 0;
+			}
+		}
+
+        
+		if(g_TIMFlag.bits.CAN20msFlag == 0)
+		{
+			CANSend20msCount++;
+			if(CANSend20msCount == 20)
+			{
+				g_TIMFlag.bits.CAN20msFlag = 1;
+				CANSend20msCount = 0;
 			}
 		}
         #if 0

@@ -30,14 +30,14 @@ typedef union
 	u8 Byte;
 	struct 
 	{
-		u8 CANFlag : 1;
+		u8 CAN100msFlag : 1;
 		u8 SpeedFlag : 1;
 		u8 LedFlag : 1;
 		u8 TIMAngSensorAFlag : 1;
 		u8 TIMAngSensorBFlag : 1;
 		u8 EncoderFlag : 1;
 		u8 DACSendFlag : 1;
-		u8 b7 : 1;
+		u8 CAN20msFlag : 1;
 	}bits;
 }STRUCT_TIMFLAG;
 extern STRUCT_TIMFLAG g_TIMFlag;

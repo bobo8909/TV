@@ -7,7 +7,7 @@
 
   <Targets>
     <Target>
-      <TargetName>TV_STM32</TargetName>
+      <TargetName>TV_BCM</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
       <TargetOption>

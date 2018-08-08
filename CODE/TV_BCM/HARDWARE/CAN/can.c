@@ -80,8 +80,8 @@ u8 CanModeInit(u8 tsjw,u8 tbs2,u8 tbs1,u16 brp,u8 mode)
   	CAN_FilterInitStructure.CAN_FilterScale = CAN_FilterScale_32bit;
   	CAN_FilterInitStructure.CAN_FilterIdHigh = (((u32)CANID_VCU_2 << 3) >> 16) & 0xFFFF;
   	CAN_FilterInitStructure.CAN_FilterIdLow = (((u32)CANID_VCU_2 << 3) & 0xFFFF) | CAN_Id_Extended | CAN_RTR_Data;
-  	CAN_FilterInitStructure.CAN_FilterMaskIdHigh = (((u32)CANID_VCU_3 << 3) >> 16) & 0xFFFF;
-  	CAN_FilterInitStructure.CAN_FilterMaskIdLow = (((u32)CANID_VCU_3 << 3) & 0xFFFF) | CAN_Id_Extended | CAN_RTR_Data;;
+  	//CAN_FilterInitStructure.CAN_FilterMaskIdHigh = (((u32)CANID_VCU_3 << 3) >> 16) & 0xFFFF;
+  	//CAN_FilterInitStructure.CAN_FilterMaskIdLow = (((u32)CANID_VCU_3 << 3) & 0xFFFF) | CAN_Id_Extended | CAN_RTR_Data;;
   	CAN_FilterInitStructure.CAN_FilterFIFOAssignment = CAN_Filter_FIFO0;//过滤器0关联到FIFO0
 	CAN_FilterInitStructure.CAN_FilterActivation = ENABLE; //激活过滤器0
   	CAN_FilterInit(&CAN_FilterInitStructure);//滤波器初始化
@@ -135,13 +135,14 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
 		
 		CANRecvDataBuf[0].NewDataFlag = 1;
 	}
+    #if 0
 	if(RxMessage.ExtId == CANID_VCU_3)
 	{
 		memcpy(CANRecvDataBuf[1].Buf,RxMessage.Data,RxMessage.DLC);
 		
 		CANRecvDataBuf[1].NewDataFlag = 1;
 	}
-	
+	#endif
 	if(RxMessage.ExtId == CANID_VCU_5)
 	{
 		memcpy(CANRecvDataBuf[2].Buf,RxMessage.Data,RxMessage.DLC);

@@ -26,19 +26,20 @@ void DAC_task(void)
 	#elif STM32_BOARD /*使用STM32内部的DAC模块进行输出*/
 	
 		u16 DACbuf[2] = {0};
-
+        u16 DACValue = 0;
 		if(g_StructBCMStatus.DrivingMode == AUTOMATIC_DRIVING )
 		{
 			/*需要把收到的14BIT的数据转换成12BIT的数据，然后再进行操作*/
-			DACbuf[0] = (((u16)g_VCU2RecvVal.Accelerator1HIGH << 8) | g_VCU2RecvVal.Accelerator1LOW) >> 2;
+			DACbuf[0] = (((u16)g_VCU2RecvVal.Accelerator1HIGH << 8) | g_VCU2RecvVal.Accelerator1LOW) ;
 
 		}
 		else
 		{
-			DACbuf[0] = (((u16)g_BCM1SendVal.Accelerator1SignalHigh << 8) | g_BCM1SendVal.Accelerator1SignalLow) >> 2;
+			DACbuf[0] = (((u16)g_BCM1SendVal.Accelerator1SignalHigh << 8) | g_BCM1SendVal.Accelerator1SignalLow) ;
 		}
 		//printf("DACBUF:%d\r\n",DACbuf[0]);
-		AcceleratorControl(DACbuf[0]);	
+		DACValue = (u32)DACbuf[0] * 5 * 4095 / 16383 / 6.6;
+		AcceleratorControl(DACValue);	
 		//AcceleratorControl(4095);
 		//Dac1_Set_Vol(3200);
 	#endif	
